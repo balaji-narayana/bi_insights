@@ -1,0 +1,681 @@
+<!-- user_dashboard.html - WITH SUPERUSER SUPPORT -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samunnati Insights 2.0 - Dashboard</title>
+    <link rel="icon" type="image/png" href="/static/Images/Samunnati Icon.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+            padding: 0.8rem 2rem;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .navbar-brand img {
+            height: 40px;
+            width: auto;
+        }
+        .navbar .nav-link {
+            margin-left: 20px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .navbar .nav-link:hover {
+            opacity: 0.85;
+        }
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-left: auto;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .user-header {
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            gap: 6px;
+        }
+        .info-badge {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+        .info-badge.superuser {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        .info-badge.admin {
+            background: #667eea;
+        }
+        .btn-logout, .btn-admin {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        .btn-logout:hover, .btn-admin:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            transform: translateY(-2px);
+        }
+        .container-main {
+            padding: 30px;
+        }
+        .dashboards-section {
+            margin-bottom: 30px;
+        }
+        .dashboards-title {
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 25px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .dashboards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .dashboard-box {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+        .dashboard-box:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+        }
+        .dashboard-box-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .dashboard-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+        .dashboard-status {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .dashboard-status.active {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .dashboard-status.inactive {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        .dashboard-name-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .dashboard-name {
+            color: #333;
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1.4;
+            word-break: break-word;
+            flex: 1;
+        }
+        .dashboard-details-toggle-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            color: #667eea;
+            font-size: 18px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+        }
+        .dashboard-details-toggle-btn:hover {
+            color: #764ba2;
+            transform: scale(1.2);
+        }
+        /* Modal Styles */
+        .dashboard-modal {
+            display: none;
+            position: fixed;
+            z-index: 9998;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease-in;
+        }
+        .dashboard-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .dashboard-modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+            animation: slideUp 0.3s ease-out;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .dashboard-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 15px;
+        }
+        .dashboard-modal-header h2 {
+            color: #333;
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0;
+            word-break: break-word;
+            flex: 1;
+        }
+        .dashboard-modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .dashboard-modal-close:hover {
+            color: #667eea;
+        }
+        .dashboard-modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .modal-info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 15px;
+            background: #f8f9fc;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .modal-info-item.alert-item {
+            background: #fff3e0;
+            border-left-color: #ef6c00;
+        }
+        .modal-info-icon {
+            color: #667eea;
+            font-size: 18px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+        .modal-info-item.alert-item .modal-info-icon {
+            color: #ef6c00;
+        }
+        .modal-info-content {
+            flex: 1;
+        }
+        .modal-info-label {
+            color: #999;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .modal-info-item.alert-item .modal-info-label {
+            color: #d97706;
+        }
+        .modal-info-value {
+            color: #333;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .modal-info-item.alert-item .modal-info-value {
+            color: #92400e;
+            line-height: 1.5;
+        }
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        .dashboard-details-visible {
+            display: block;
+            animation: slideDown 0.3s ease-in-out;
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+            }
+            to {
+                opacity: 1;
+                max-height: 200px;
+            }
+        }
+        .dashboard-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: auto;
+        }
+        .btn-view {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .btn-view:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+        .btn-view:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-view:disabled:hover {
+            box-shadow: none;
+        }
+        .btn-wip {
+            flex: 1;
+            background: #fff3e0;
+            border: none;
+            color: #ef6c00;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: not-allowed;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .no-dashboards {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        .no-dashboards i {
+            font-size: 48px;
+            color: #ddd;
+            margin-bottom: 15px;
+        }
+        .no-dashboards p {
+            font-size: 16px;
+            margin: 0;
+        }
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .loading-overlay.show {
+            display: flex;
+        }
+        .loading-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .loading-content i {
+            font-size: 48px;
+            color: #667eea;
+            margin-bottom: 15px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @media (max-width: 768px) {
+            .dashboards-grid {
+                grid-template-columns: 1fr;
+            }
+            .user-menu {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard">
+                <img src="{{ url_for('static', filename='Images/Samunnati Logo-white.png') }}" alt="Samunnati Logo">
+            </a>
+            <div class="user-menu ms-auto">
+                <div class="user-info">
+                    <div class="user-header">
+                        <span>{{ username }}</span>
+                        <span>|</span>
+                        <span>{{ department_name }}</span>
+                    </div>
+                    {% if role == 'admin' %}
+                    <span class="info-badge admin">
+                        <i class="fas fa-shield-alt"></i> Admin
+                    </span>
+                    {% elif role == 'superuser' %}
+                    <span class="info-badge superuser">
+                        <i class="fas fa-eye"></i> Superuser
+                    </span>
+                    {% endif %}
+                </div>
+                {% if role in ['admin', 'superuser'] %}
+                <a href="/admin" class="btn-admin">
+                    <i class="fas fa-{% if role == 'superuser' %}eye{% else %}lock{% endif %}"></i> 
+                    {% if role == 'superuser' %}Admin (View-Only){% else %}Admin Portal{% endif %}
+                </a>
+                {% endif %}
+                <a href="/logout" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container-main">
+        <!-- Dashboards Section -->
+        {% if dashboards %}
+        <div class="dashboards-section">
+            <h2 class="dashboards-title">
+                <i class="fas fa-th-large"></i>
+                {% if role == 'admin' %}
+                All Dashboards
+                {% elif role == 'superuser' %}
+                All Dashboards (View Access)
+                {% else %}
+                Your Accessible Dashboards
+                {% endif %}
+                <span style="font-size: 16px; color: #667eea; margin-left: auto;">{{ dashboards|length }} available</span>
+            </h2>
+            
+            <div class="dashboards-grid">
+                {% for dashboard in dashboards %}
+                <div class="dashboard-box">
+                    <div class="dashboard-box-header">
+                        <div class="dashboard-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <span class="dashboard-status {{ 'active' if dashboard['Status'] == 'Active' else 'inactive' }}">
+                            {{ dashboard['Status'] }}
+                        </span>
+                    </div>
+                    
+                    <div class="dashboard-name-wrapper">
+                        <div class="dashboard-name">{{ dashboard['DashboardName'] }}</div>
+                        <button class="dashboard-details-toggle-btn" onclick="showDashboardInfo({{ dashboard['DashboardID'] }}, '{{ dashboard['DashboardName'] }}', '{{ dashboard['DashboardOwner'] or 'Unassigned' }}', '{{ dashboard['CreatedAt'].strftime('%b %d, %Y') if dashboard['CreatedAt'] else 'Unknown' }}', '{{ dashboard['Status'] }}', '{{ dashboard['Alert'] or '' }}')" title="Show Details">
+                            <i class="fas fa-circle-info"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="dashboard-buttons">
+                        {% if role == 'admin' or role == 'superuser' or dashboard['Status'] == 'Active' %}
+                        <button class="btn-view" onclick="viewDashboardReport({{ dashboard['DashboardID'] }}, '{{ dashboard['DashboardName'] }}')">
+                            Open
+                        </button>
+                        {% else %}
+                        <button class="btn-wip" disabled>
+                            <i class="fas fa-clock"></i> Work in Progress
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="dashboard-box">
+            <div class="no-dashboards">
+                <i class="fas fa-inbox"></i>
+                {% if role == 'admin' or role == 'superuser' %}
+                <p>No dashboards available yet</p>
+                <p style="font-size: 13px; color: #999; margin-top: 10px;">
+                    <a href="/admin" style="color: #667eea; text-decoration: none;">Go to Admin Panel</a> to {% if role == 'superuser' %}view or {% endif %}create dashboards
+                </p>
+                {% else %}
+                <p>No dashboards available for your department</p>
+                <p style="font-size: 13px; color: #999; margin-top: 10px;">Please contact your administrator for access</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Dashboard Info Modal -->
+    <div id="dashboardInfoModal" class="dashboard-modal">
+        <div class="dashboard-modal-content">
+            <div class="dashboard-modal-header">
+                <h2 id="modalDashboardName">Dashboard Name</h2>
+                <button class="dashboard-modal-close" onclick="closeDashboardInfo()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="dashboard-modal-body">
+                <div class="modal-info-item">
+                    <div class="modal-info-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="modal-info-content">
+                        <div class="modal-info-label">Technical Contact Person</div>
+                        <div class="modal-info-value" id="modalContactPerson">Unassigned</div>
+                    </div>
+                </div>
+                <div class="modal-info-item">
+                    <div class="modal-info-icon">
+                        <i class="fas fa-calendar"></i>
+                    </div>
+                    <div class="modal-info-content">
+                        <div class="modal-info-label">Created On</div>
+                        <div class="modal-info-value" id="modalCreatedDate">Unknown</div>
+                    </div>
+                </div>
+                <!-- Alert Item - Only displayed for Inactive dashboards -->
+                <div class="modal-info-item alert-item" id="alertItemContainer" style="display: none;">
+                    <div class="modal-info-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div class="modal-info-content">
+                        <div class="modal-info-label">Update</div>
+                        <div class="modal-info-value" id="modalAlertMessage">No alert message</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <i class="fas fa-spinner"></i>
+            <p style="margin-top: 15px; color: #333; font-weight: 600;">Loading Dashboard...</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let dashboardsData = {{ dashboards | tojson }};
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('show');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('show');
+        }
+
+        function showDashboardInfo(dashboardId, dashboardName, contactPerson, createdDate, status, alertMessage) {
+            document.getElementById('modalDashboardName').textContent = dashboardName;
+            document.getElementById('modalContactPerson').textContent = contactPerson;
+            document.getElementById('modalCreatedDate').textContent = createdDate;
+            
+            // Show alert section only if status is 'Inactive' and alert message exists
+            const alertContainer = document.getElementById('alertItemContainer');
+            if (status === 'Inactive' && alertMessage && alertMessage.trim() !== '') {
+                document.getElementById('modalAlertMessage').textContent = alertMessage;
+                alertContainer.style.display = 'flex';
+            } else {
+                alertContainer.style.display = 'none';
+            }
+            
+            document.getElementById('dashboardInfoModal').classList.add('show');
+        }
+
+        function closeDashboardInfo() {
+            document.getElementById('dashboardInfoModal').classList.remove('show');
+        }
+
+        // Close modal when clicking outside the content
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('dashboardInfoModal');
+            if (modal) {
+                modal.addEventListener('click', function(event) {
+                    if (event.target === modal) {
+                        closeDashboardInfo();
+                    }
+                });
+            }
+        });
+
+        // Close modal when pressing ESC key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeDashboardInfo();
+            }
+        });
+
+        function viewDashboardReport(dashboardId, dashboardName) {
+            if (!dashboardId) {
+                alert('Invalid dashboard ID');
+                return;
+            }
+
+            showLoading();
+
+            fetch(`/user/report-token/${dashboardId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(r => r.json())
+            .then(d => {
+                hideLoading();
+                if (d.success) {
+                    const url = `/view-report?token=${encodeURIComponent(d.token)}&embedUrl=${encodeURIComponent(d.embed_url)}&reportId=${encodeURIComponent(d.report_id)}&reportName=${encodeURIComponent(dashboardName)}`;
+                    window.location.href = url;
+                } else {
+                    alert('Error: ' + d.error);
+                }
+            })
+            .catch(err => {
+                hideLoading();
+                alert('Error: ' + err.message);
+                console.error(err);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,533 @@
+<!-- powerbi_report.html - FIXED WITH SESSION STORAGE & TOKEN PERSISTENCE -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samunnati Insights 2.0 - Report</title>
+    <link rel="icon" type="image/png" href="/static/Images/Samunnati Icon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/powerbi-client/2.23.1/powerbi.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; height: 100vh; display: flex; flex-direction: column; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: all 0.3s ease; }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .header-logo { height: 40px; width: auto; }
+        .header h1 { font-size: 20px; font-weight: 600; margin: 0; }
+        .header-right { display: flex; align-items: center; gap: 20px; }
+        .user-info { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+        .user-icon { font-size: 18px; }
+        .user-name { font-weight: 600; }
+        .btn-logout { background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-weight: 600; transition: background 0.3s; text-decoration: none; display: flex; align-items: center; gap: 8px; font-size: 13px; }
+        .btn-logout:hover { background: rgba(255,255,255,0.3); color: white; }
+        .back-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; font-weight: 600; transition: background 0.3s; }
+        .back-btn:hover { background: rgba(255,255,255,0.3); }
+        .fullscreen-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; font-weight: 600; transition: background 0.3s; display: flex; align-items: center; gap: 8px; }
+        .fullscreen-btn:hover { background: rgba(255,255,255,0.3); }
+        .report-container { flex: 1; padding: 20px; display: flex; transition: all 0.3s ease; }
+        #embedContainer { width: 100%; background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        
+        /* Full Screen Mode */
+        body.fullscreen-mode { background: black; }
+        body.fullscreen-mode .header { padding: 20px 30px; }
+        body.fullscreen-mode .report-container { padding: 0; }
+        body.fullscreen-mode #embedContainer { border-radius: 0; box-shadow: none; }
+        body.fullscreen-mode .user-info { display: none; }
+        
+        .button-group { display: flex; gap: 10px; align-items: center; }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .loading-spinner {
+            font-size: 48px;
+            color: #667eea;
+            margin-bottom: 15px;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            color: #333;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Error Message */
+        .error-message {
+            padding: 20px;
+            background: #fed7d7;
+            border: 1px solid #fc8181;
+            border-radius: 8px;
+            color: #742a2a;
+            margin: 20px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .error-message strong {
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-left">
+            <img src="{{ url_for('static', filename='Images/Samunnati Logo.png') }}" alt="Samunnati Logo" class="header-logo">
+            <h1 id="reportTitle">Power BI Report</h1>
+        </div>
+        <div class="header-right">
+            <div class="user-info">
+                <i class="fas fa-user-circle user-icon"></i>
+                <span class="user-name">{{ username }}</span>
+            </div>
+            <div class="button-group">
+                <button class="back-btn" onclick="goBack()">← Back</button>
+                <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()">
+                    <span id="fullscreenIcon">🖥️</span> Full Screen
+                </button>
+                <a href="/logout" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="error-message" id="errorMessage"></div>
+
+    <div class="report-container">
+        <div id="embedContainer"></div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner"></i>
+            </div>
+            <div class="loading-text">Loading Report...</div>
+        </div>
+    </div>
+
+    <script>
+        let loadedResolve, reportLoaded = new Promise((res, rej) => { loadedResolve = res; });
+        let renderedResolve, reportRendered = new Promise((res, rej) => { renderedResolve = res; });
+        let isFullscreenMode = false;
+        let currentDashboardId = null;
+        let report = null;
+
+        // Get models
+        models = window['powerbi-client'].models;
+
+        // Get parameters from URL or sessionStorage
+        let EMBED_ACCESS_TOKEN = null;
+        let EMBED_URL = null;
+        let REPORT_ID = null;
+        let REPORT_NAME = null;
+        let TOKEN_TYPE = '1'; // 1 for AAD
+
+        // Initialize report data
+        function initializeReportData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Try to get from URL first
+            const urlToken = urlParams.get('token');
+            const urlEmbedUrl = urlParams.get('embedUrl');
+            const urlReportId = urlParams.get('reportId');
+            const urlReportName = urlParams.get('reportName');
+
+            if (urlToken && urlEmbedUrl && urlReportId) {
+                // Data from URL - store in sessionStorage
+                EMBED_ACCESS_TOKEN = urlToken;
+                EMBED_URL = urlEmbedUrl;
+                REPORT_ID = urlReportId;
+                REPORT_NAME = urlReportName || 'Power BI Report';
+                currentDashboardId = extractDashboardId(urlReportId);
+
+                // Store in sessionStorage for persistence
+                sessionStorage.setItem('reportToken', EMBED_ACCESS_TOKEN);
+                sessionStorage.setItem('reportEmbedUrl', EMBED_URL);
+                sessionStorage.setItem('reportId', REPORT_ID);
+                sessionStorage.setItem('reportName', REPORT_NAME);
+                sessionStorage.setItem('dashboardId', currentDashboardId);
+
+                // Clean URL to hide sensitive data
+                window.history.replaceState({}, REPORT_NAME, `/view-report`);
+            } else {
+                // Try to get from sessionStorage
+                EMBED_ACCESS_TOKEN = sessionStorage.getItem('reportToken');
+                EMBED_URL = sessionStorage.getItem('reportEmbedUrl');
+                REPORT_ID = sessionStorage.getItem('reportId');
+                REPORT_NAME = sessionStorage.getItem('reportName') || 'Power BI Report';
+                currentDashboardId = sessionStorage.getItem('dashboardId');
+
+                if (!EMBED_ACCESS_TOKEN || !EMBED_URL || !REPORT_ID) {
+                    // No data found - redirect back
+                    showError('Report data not found. Please select a report from the dashboard.');
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 3000);
+                    return false;
+                }
+            }
+
+            updateReportInfo();
+            return true;
+        }
+
+        // Extract dashboard ID from report ID or URL
+        function extractDashboardId(reportId) {
+            // Try to find dashboard ID from sessionStorage or URL
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('dashboardId') || sessionStorage.getItem('dashboardId') || null;
+        }
+
+        // Update report title
+        function updateReportInfo() {
+            document.getElementById('reportTitle').textContent = REPORT_NAME;
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.innerHTML = `<strong>⚠️ Error:</strong> ${message}`;
+            errorDiv.classList.add('show');
+        }
+
+        // Hide error message
+        function hideError() {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.classList.remove('show');
+        }
+
+        // Show loading overlay
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('show');
+        }
+
+        // Hide loading overlay
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('show');
+        }
+
+        // Refresh token if expired
+        function refreshTokenIfNeeded() {
+            return new Promise((resolve) => {
+                // Token refresh logic - call backend to generate new token
+                if (!currentDashboardId) {
+                    resolve(true);
+                    return;
+                }
+
+                showLoading();
+
+                // Determine which endpoint to use (user or admin)
+                const endpoint = window.location.pathname.includes('admin') ? 
+                    `/admin/report-token/${currentDashboardId}` : 
+                    `/user/report-token/${currentDashboardId}`;
+
+                fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(r => r.json())
+                .then(d => {
+                    hideLoading();
+                    if (d.success) {
+                        // Update token data
+                        EMBED_ACCESS_TOKEN = d.token;
+                        EMBED_URL = d.embed_url;
+                        
+                        // Update sessionStorage
+                        sessionStorage.setItem('reportToken', EMBED_ACCESS_TOKEN);
+                        sessionStorage.setItem('reportEmbedUrl', EMBED_URL);
+                        
+                        resolve(true);
+                    } else {
+                        showError(`Failed to refresh token: ${d.error}`);
+                        resolve(false);
+                    }
+                })
+                .catch(err => {
+                    hideLoading();
+                    console.error('Token refresh error:', err);
+                    resolve(true); // Continue anyway with existing token
+                });
+            });
+        }
+
+        // Toggle Full Screen Mode
+        function toggleFullscreen() {
+            if (!isFullscreenMode) {
+                // Enter fullscreen
+                let elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.mozRequestFullScreen) {
+                    elem.mozRequestFullScreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                }
+                isFullscreenMode = true;
+                document.body.classList.add('fullscreen-mode');
+                document.getElementById('fullscreenIcon').textContent = '✕';
+            } else {
+                // Exit fullscreen
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                isFullscreenMode = false;
+                document.body.classList.remove('fullscreen-mode');
+                document.getElementById('fullscreenIcon').textContent = '🖥️';
+            }
+        }
+
+        // Go back to dashboard
+        function goBack() {
+            // Clear sessionStorage
+            sessionStorage.removeItem('reportToken');
+            sessionStorage.removeItem('reportEmbedUrl');
+            sessionStorage.removeItem('reportId');
+            sessionStorage.removeItem('reportName');
+            sessionStorage.removeItem('dashboardId');
+            
+            history.back();
+        }
+
+        // Handle ESC key to exit full screen
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                if (isFullscreenMode) {
+                    isFullscreenMode = false;
+                    document.body.classList.remove('fullscreen-mode');
+                    document.getElementById('fullscreenIcon').textContent = '🖥️';
+                    
+                    // Exit fullscreen if in fullscreen mode
+                    if (document.fullscreenElement) {
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen();
+                        } else if (document.webkitExitFullscreen) {
+                            document.webkitExitFullscreen();
+                        }
+                    }
+                }
+            }
+        });
+
+        // Handle fullscreen change events
+        document.addEventListener('fullscreenchange', function() {
+            if (!document.fullscreenElement) {
+                isFullscreenMode = false;
+                document.body.classList.remove('fullscreen-mode');
+                document.getElementById('fullscreenIcon').textContent = '🖥️';
+            }
+        });
+
+        // Embed function
+        function embedPowerBIReport() {
+            // Check if parameters exist
+            if (!EMBED_ACCESS_TOKEN || !EMBED_URL || !REPORT_ID) {
+                showError('Missing report parameters. Please select a report from the dashboard.');
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 3000);
+                return;
+            }
+
+            showLoading();
+
+            // Read embed application token
+            let accessToken = EMBED_ACCESS_TOKEN;
+
+            // Read embed URL
+            let embedUrl = EMBED_URL;
+
+            // Read report Id
+            let embedReportId = REPORT_ID;
+
+            // Read embed type
+            let tokenType = TOKEN_TYPE;
+
+            // Permissions
+            let permissions = models.Permissions.All;
+
+            // Create the embed configuration object for the report
+            let config = {
+                type: 'report',
+                tokenType: tokenType == '0' ? models.TokenType.Aad : models.TokenType.Embed,
+                accessToken: accessToken,
+                embedUrl: embedUrl,
+                id: embedReportId,
+                permissions: permissions,
+                settings: {
+                    panes: {
+                        filters: {
+                            visible: true
+                        },
+                        pageNavigation: {
+                            visible: true
+                        }
+                    },
+                    bars: {
+                        statusBar: {
+                            visible: true
+                        }
+                    }
+                }
+            };
+
+            // Get a reference to the embedded report HTML element
+            let embedContainer = $('#embedContainer')[0];
+
+            // Clear previous report if exists
+            if (report) {
+                report = null;
+            }
+
+            // Embed the report and display it within the div container
+            report = powerbi.embed(embedContainer, config);
+
+            // Handle loaded
+            report.off("loaded");
+            report.on("loaded", function () {
+                console.log("✅ Report loaded successfully");
+                hideLoading();
+                loadedResolve();
+                report.off("loaded");
+            });
+
+            // Handle error
+            report.off("error");
+            report.on("error", function (event) {
+                console.error("❌ Report error:", event.detail);
+                hideLoading();
+                
+                const errorDetail = event.detail ? event.detail[0] : {};
+                const errorMessage = errorDetail.message || 'Failed to load report';
+                
+                if (errorMessage.includes('token') || errorMessage.includes('unauthorized')) {
+                    showError('Your session has expired. Refreshing...');
+                    // Try to refresh token and reload
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showError(errorMessage);
+                }
+            });
+
+            // Handle rendered
+            report.off("rendered");
+            report.on("rendered", function () {
+                console.log("✅ Report rendered successfully");
+                hideLoading();
+                renderedResolve();
+                report.off("rendered");
+            });
+        }
+
+        // Page visibility change - handle resume from background
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+                // Page became visible again
+                console.log('Page became visible - checking token validity');
+                // Optionally refresh token here if needed
+            }
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const initialized = initializeReportData();
+            if (initialized) {
+                // Refresh token if needed, then embed
+                refreshTokenIfNeeded().then(() => {
+                    embedPowerBIReport();
+                });
+            }
+        });
+
+        // Also handle direct page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                const initialized = initializeReportData();
+                if (initialized) {
+                    refreshTokenIfNeeded().then(() => {
+                        embedPowerBIReport();
+                    });
+                }
+            });
+        } else {
+            const initialized = initializeReportData();
+            if (initialized) {
+                refreshTokenIfNeeded().then(() => {
+                    embedPowerBIReport();
+                });
+            }
+        }
+
+        // Wait for load
+        reportLoaded.then(() => {
+            console.log("Report load complete");
+        });
+
+        // Wait for render
+        reportRendered.then(() => {
+            console.log("Report render complete");
+        });
+
+        // Cleanup on logout or page unload
+        window.addEventListener('beforeunload', function(e) {
+            // Only clear if user is logging out or closing the page
+            if (window.location.href.includes('logout')) {
+                sessionStorage.removeItem('reportToken');
+                sessionStorage.removeItem('reportEmbedUrl');
+                sessionStorage.removeItem('reportId');
+                sessionStorage.removeItem('reportName');
+                sessionStorage.removeItem('dashboardId');
+            }
+        });
+    </script>
+</body>
+</html>

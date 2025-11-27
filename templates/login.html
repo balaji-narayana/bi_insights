@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samunnati Insights 2.0 - Login</title>
+    <link rel="icon" type="image/png" href="/static/Images/Samunnati Icon.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 420px;
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .login-logo {
+            width: 220px;
+            height: auto;
+            margin-bottom: 25px;
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .login-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2d3748;
+            margin: 0 0 8px 0;
+        }
+        
+        .login-header p {
+            color: #718096;
+            font-size: 14px;
+            margin: 0;
+        }
+        
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            padding: 0;
+            font-weight: bold;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s;
+            cursor: pointer;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-login:hover {
+            transform: scale(1.1);
+            color: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .form-container {
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        
+        .toast {
+            border: 1px solid #e0e0e0 !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+            animation: slideInRight 0.3s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .toast-body {
+            padding: 12px 16px !important;
+        }
+        
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 35px 24px;
+                margin: 20px;
+            }
+            .login-logo { width: 180px; }
+            .login-header h1 { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="login-container">
+        <div class="login-header">
+            <img src="{{ url_for('static', filename='Images/Samunnati Logo.png') }}" alt="Samunnati Logo" class="login-logo">
+            <h1>Insights 2.0</h1>
+            <p>Enterprise Analytics</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            showToast("{{ message }}", "{{ category }}");
+                        });
+                    </script>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('login') }}">
+            <div class="form-container">
+                <button type="submit" class="btn-login" title="Login with Azure AD">
+                    Login
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function showToast(message, category = 'success') {
+            let icon = '✓', bgClass = 'bg-success';
+            
+            if (category === 'danger') {
+                icon = '✕';
+                bgClass = 'bg-danger';
+            } else if (category === 'warning') {
+                icon = '⚠';
+                bgClass = 'bg-warning';
+            } else if (message.toLowerCase().includes('logout')) {
+                icon = '🚪';
+                bgClass = 'bg-info';
+            }
+            
+            const toastHTML = `
+                <div class="toast align-items-center text-white ${bgClass} border-0" role="alert">
+                    <div class="d-flex w-100">
+                        <div class="toast-body"><span style="font-size: 16px; margin-right: 8px;">${icon}</span>${message}</div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+            
+            const container = document.getElementById('toastContainer');
+            container.insertAdjacentHTML('beforeend', toastHTML);
+            const toast = new bootstrap.Toast(container.lastElementChild, { delay: 4000 });
+            toast.show();
+        }
+    </script>
+</body>
+</html>
