@@ -1,0 +1,177 @@
+<!-- Users Tab - admin_users.html -->
+
+<style>
+    /* Users Tab Specific Styles */
+    #users .role-dropdown {
+        padding: 8px 12px;
+        border: 2px solid #667eea;
+        border-radius: 6px;
+        font-size: 13px;
+        background-color: white;
+        color: var(--text-primary);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        min-width: 120px;
+    }
+
+    #users .role-dropdown:hover {
+        background-color: #f8f9fc;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+    }
+
+    #users .role-dropdown:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+    }
+
+    #users .role-dropdown option {
+        padding: 8px;
+        background: white;
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    #users .role-dropdown option:checked {
+        background: linear-gradient(#667eea, #667eea);
+        background-color: #667eea;
+        color: white;
+    }
+
+    #users .role-badge-display {
+        display: inline-block;
+        padding: 8px 14px;
+        background: #f0f4ff;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 13px;
+    }
+</style>
+
+<div id="users" class="tab-content-section">
+    <div class="page-header">
+        <h2>Users</h2>
+        <p>Manage user accounts and roles</p>
+    </div>
+
+    <div class="card-modern">
+        <div class="card-header-modern">
+            <h5><i class="fas fa-users"></i> User Management</h5>
+        </div>
+        <div class="card-body-modern">
+            {% if users %}
+                <table id="usersTable" class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>NAME</th>
+                            <th>EMAIL</th>
+                            <th>DEPARTMENT</th>
+                            <th>ROLE</th>
+                            <th>CREATED DATE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td><strong>#{{ user['UserID'] }}</strong></td>
+                            <td>{{ user['UserName'] }}</td>
+                            <td>{{ user['UserEmail'] }}</td>
+                            <td>{{ user['DepartmentName'] }}</td>
+                            <td>
+                                {% if role != 'superuser' %}
+                                <select class="role-dropdown" id="role_{{ user['UserID'] }}" data-user-id="{{ user['UserID'] }}" onchange="changeUserRole({{ user['UserID'] }}, this)">
+                                    <option value="user" {% if user['Role'] == 'user' %}selected{% endif %}>User</option>
+                                    <option value="admin" {% if user['Role'] == 'admin' %}selected{% endif %}>Admin</option>
+                                    <option value="superuser" {% if user['Role'] == 'superuser' %}selected{% endif %}>Superuser</option>
+                                </select>
+                                {% else %}
+                                <span class="role-badge-display">
+                                    {% if user['Role'] == 'admin' %}
+                                        <i class="fas fa-shield-alt"></i> ADMIN
+                                    {% elif user['Role'] == 'superuser' %}
+                                        <i class="fas fa-eye"></i> SUPERUSER
+                                    {% else %}
+                                        <i class="fas fa-user"></i> USER
+                                    {% endif %}
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user['CreatedAt'].strftime('%Y-%m-%d') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p><strong>No users found</strong></p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Users Tab Specific Scripts
+    function changeUserRole(userId, selectElement) {
+        if (isSuperuser) {
+            alert('You do not have permission to change user roles (Read-only mode)');
+            return;
+        }
+
+        const newRole = selectElement.value;
+        showLoading();
+
+        fetch(`/admin/change-user-role/${userId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role: newRole })
+        })
+        .then(r => r.json())
+        .then(d => {
+            hideLoading();
+            if (d.success) {
+                alert('User role updated successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + d.error);
+                location.reload();
+            }
+        })
+        .catch(err => {
+            hideLoading();
+            alert('Error updating role: ' + err.message);
+            console.error(err);
+        });
+    }
+
+    $(document).ready(function() {
+        {% if users %}
+        const commonConfig = {
+            pageLength: 10,
+            autoWidth: false,
+            dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+            language: {
+                search: "Search:",
+                lengthMenu: "Show _MENU_ entries",
+                paginate: {
+                    first: "First",
+                    last: "Last",
+                    next: "Next",
+                    previous: "Previous"
+                }
+            }
+        };
+
+        $('#usersTable').DataTable({
+            ...commonConfig,
+            order: [[0, 'desc']],
+            language: {
+                ...commonConfig.language,
+                info: "Showing _START_ to _END_ of _TOTAL_ users"
+            }
+        });
+        {% endif %}
+    });
+</script>

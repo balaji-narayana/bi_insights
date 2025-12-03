@@ -7,21 +7,21 @@ import secrets
 from functools import wraps
 
 # Import all modules
-from db_connection import get_db_connection, close_db_connection
-from login_logout import register_login_routes, login_required, admin_required, admin_write_required
-from user_interface import register_user_routes
-from embed_token_url import get_embed_token
-from admin_overview import (
-    get_users_count, 
-    get_departments_count, 
-    get_active_dashboards_count, 
+from Backend.DB_backend.db_connection import get_db_connection, close_db_connection
+from Backend.DB_backend.login_logout import register_login_routes, login_required, admin_required, admin_write_required
+from Backend.user_backend.user_interface import register_user_routes
+from Backend.powerbi_backend.embed_token_url import get_embed_token
+from Backend.admin_backend.admin_overview import (
+    get_users_count,
+    get_departments_count,
+    get_active_dashboards_count,
     get_all_user_logs
 )
-from admin_reports import register_admin_reports_routes, get_all_dashboards
-from admin_departments import get_all_departments, get_departments_with_dashboards
-from admin_permissions import register_admin_permissions_routes, get_department_permissions
-from admin_users import register_admin_users_routes, get_all_users
-from admin_configuration_test import register_admin_configuration_routes
+from Backend.admin_backend.admin_reports import register_admin_reports_routes, get_all_dashboards
+from Backend.admin_backend.admin_departments import get_all_departments, get_departments_with_dashboards
+from Backend.admin_backend.admin_permissions import register_admin_permissions_routes, get_department_permissions
+from Backend.admin_backend.admin_users import register_admin_users_routes, get_all_users
+from Backend.admin_backend.admin_configuration_test import register_admin_configuration_routes
 
 try:
     from dotenv import load_dotenv
@@ -91,7 +91,7 @@ def admin_dashboard():
         'active_dashboards_count': active_dashboards_count
     }
     
-    return render_template('admin_dashboard.html', **context)
+    return render_template('admin/admin_dashboard.html', **context)
 
 
 @app.route('/admin/report-token/<int:dashboard_id>', methods=['POST'])
@@ -100,15 +100,15 @@ def admin_report_token(dashboard_id):
     """
     Generate Power BI embed token for a dashboard from database
     """
-    from user_interface import get_dashboard_by_id
-    
+    from Backend.user_backend.user_interface import get_dashboard_by_id
+
     try:
         dashboard = get_dashboard_by_id(dashboard_id)
-        
+
         if not dashboard:
             return {'success': False, 'error': 'Dashboard not found'}, 404
-        
-        from db_connection import get_db_connection, close_db_connection
+
+        from Backend.DB_backend.db_connection import get_db_connection, close_db_connection
         import os
         from dotenv import load_dotenv
         from flask import jsonify

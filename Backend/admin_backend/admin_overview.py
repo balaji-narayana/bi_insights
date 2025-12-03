@@ -1,7 +1,7 @@
 #admin_overview
 from flask import render_template, session
-from db_connection import get_db_connection, close_db_connection
-from login_logout import admin_required
+from Backend.DB_backend.db_connection import get_db_connection, close_db_connection
+from Backend.DB_backend.login_logout import admin_required
 
 
 def get_users_count():

@@ -1,8 +1,8 @@
 #admin_configuration
 
 from flask import request, jsonify, session
-from login_logout import admin_required
-from embed_token_url import get_embed_token
+from Backend.DB_backend.login_logout import admin_required
+from Backend.powerbi_backend.embed_token_url import get_embed_token
 
 
 def register_admin_configuration_routes(app):

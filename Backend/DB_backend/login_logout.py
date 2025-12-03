@@ -6,7 +6,7 @@ import requests
 import os
 
 from functools import wraps
-from db_connection import insert_user_log
+from Backend.DB_backend.db_connection import insert_user_log
 
 try:
     from dotenv import load_dotenv
@@ -20,7 +20,7 @@ AZURE_AD_CONFIG = {
     "client_secret": os.getenv('SSO_CLIENT_SECRET'),
     "tenant": os.getenv('SSO_TENANT'),
     "authority": None,
-    "redirect_uri": 'http://localhost:5000/auth/callback',
+    "redirect_uri": os.getenv('redirect_uri'),
     "scopes": ["User.Read"]
 }
 
@@ -40,7 +40,7 @@ def authenticate_user(email):
     """
     Authenticate user by checking email against database
     """
-    from db_connection import get_db_connection, close_db_connection
+    from Backend.DB_backend.db_connection import get_db_connection, close_db_connection
     
     try:
         conn = get_db_connection()

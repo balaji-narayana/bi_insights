@@ -2,9 +2,9 @@
 
 
 from flask import render_template, request, redirect, url_for, session, jsonify
-from db_connection import get_db_connection, close_db_connection
-from login_logout import login_required
-from embed_token_url import get_embed_token
+from Backend.DB_backend.db_connection import get_db_connection, close_db_connection
+from Backend.DB_backend.login_logout import login_required
+from Backend.powerbi_backend.embed_token_url import get_embed_token
 import os
 try:
     from dotenv import load_dotenv

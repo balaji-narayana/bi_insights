@@ -1,5 +1,5 @@
 #admin_departments
-from db_connection import get_db_connection, close_db_connection
+from Backend.DB_backend.db_connection import get_db_connection, close_db_connection
 
 
 def get_all_departments():

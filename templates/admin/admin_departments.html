@@ -1,0 +1,275 @@
+<!-- Departments Tab - admin_departments.html -->
+
+<style>
+    /* Departments Tab Specific Styles */
+    #departments .dept-item {
+        background: var(--card-bg);
+        border-radius: 10px;
+        margin-bottom: 16px;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+        transition: all 0.3s;
+    }
+
+    #departments .dept-item:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    #departments .dept-header {
+        padding: 20px 24px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--card-bg);
+        transition: all 0.3s;
+    }
+
+    #departments .dept-header:hover {
+        background: #f8f9fc;
+    }
+
+    #departments .dept-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex: 1;
+    }
+
+    #departments .dept-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--primary-gradient);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+    }
+
+    #departments .dept-details h6 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    #departments .dept-details p {
+        margin: 4px 0 0 0;
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+
+    #departments .dept-meta {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    #departments .dept-count {
+        background: #edf2f7;
+        color: var(--text-primary);
+        padding: 6px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    #departments .dept-arrow {
+        font-size: 16px;
+        color: var(--text-secondary);
+        transition: transform 0.3s;
+    }
+
+    #departments .dept-arrow.expanded {
+        transform: rotate(180deg);
+    }
+
+    #departments .dept-dashboards {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease-out;
+        background: #f8f9fc;
+    }
+
+    #departments .dept-dashboards.expanded {
+        max-height: 2000px;
+        transition: max-height 0.4s ease-in;
+    }
+
+    #departments .dashboard-card {
+        background: white;
+        margin: 12px;
+        padding: 18px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: all 0.3s;
+    }
+
+    #departments .dashboard-card:hover {
+        transform: translateX(4px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    #departments .dashboard-info-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex: 1;
+    }
+
+    #departments .dashboard-mini-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--primary-gradient);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 16px;
+    }
+
+    #departments .dashboard-details h6 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    #departments .dashboard-details p {
+        margin: 4px 0 0 0;
+        font-size: 11px;
+        color: var(--text-secondary);
+    }
+
+    #departments .dashboard-meta-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+</style>
+
+<div id="departments" class="tab-content-section">
+    <div class="page-header">
+        <h2>Departments</h2>
+        <p>View departments and their dashboard access</p>
+    </div>
+
+    <div class="card-modern">
+        <div class="card-header-modern">
+            <h5><i class="fas fa-building"></i> Departments & Dashboard Access</h5>
+        </div>
+        <div class="card-body-modern">
+            {% if departments_with_dashboards %}
+                {% for dept in departments_with_dashboards %}
+                <div class="dept-item">
+                    <div class="dept-header" onclick="toggleDepartment({{ dept['DepartmentID'] }})">
+                        <div class="dept-info">
+                            <div class="dept-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div class="dept-details">
+                                <h6>{{ dept['DepartmentName'] }}</h6>
+                                <p><i class="fas fa-calendar"></i> Created: {{ dept['CreatedAt'].strftime('%Y-%m-%d') if dept['CreatedAt'] else 'N/A' }}</p>
+                            </div>
+                        </div>
+                        <div class="dept-meta">
+                            <span class="dept-count">{{ dept['DashboardCount'] }} Dashboard{% if dept['DashboardCount'] != 1 %}s{% endif %}</span>
+                            <i class="fas fa-chevron-down dept-arrow" id="arrow-{{ dept['DepartmentID'] }}"></i>
+                        </div>
+                    </div>
+                    <div class="dept-dashboards" id="dashboards-{{ dept['DepartmentID'] }}">
+                        {% if dept['Dashboards'] %}
+                            {% for dashboard in dept['Dashboards'] %}
+                            <div class="dashboard-card">
+                                <div class="dashboard-info-left">
+                                    <div class="dashboard-mini-icon">
+                                        <i class="fas fa-chart-bar"></i>
+                                    </div>
+                                    <div class="dashboard-details">
+                                        <h6>{{ dashboard['DashboardName'] }}</h6>
+                                        <p>
+                                            <i class="fas fa-user"></i> Owner: {{ dashboard['DashboardOwner'] or 'Unassigned' }} |
+                                            <i class="fas fa-shield-alt"></i> Granted by {{ dashboard['GrantedBy'] or 'Unknown' }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="dashboard-meta-right">
+                                    <span class="status-badge {% if dashboard['Status'] == 'Active' %}active{% else %}inactive{% endif %}">
+                                        {{ dashboard['Status'] }}
+                                    </span>
+                                    <button class="action-btn play" onclick="viewDeptDashboardReport({{ dashboard['DashboardID'] }})" title="Open Dashboard">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>No dashboards assigned to this department</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p><strong>No departments found</strong></p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Departments Tab Specific Scripts
+
+    function toggleDepartment(deptId) {
+        const dashboardsDiv = document.getElementById(`dashboards-${deptId}`);
+        const arrow = document.getElementById(`arrow-${deptId}`);
+
+        if (dashboardsDiv.classList.contains('expanded')) {
+            dashboardsDiv.classList.remove('expanded');
+            arrow.classList.remove('expanded');
+        } else {
+            dashboardsDiv.classList.add('expanded');
+            arrow.classList.add('expanded');
+        }
+    }
+
+    function viewDeptDashboardReport(dashboardId) {
+        if (!dashboardId) {
+            alert('Invalid dashboard ID');
+            return;
+        }
+
+        showLoading();
+
+        fetch(`/admin/report-token/${dashboardId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(r => r.json())
+        .then(d => {
+            hideLoading();
+            if (d.success) {
+                const url = `/view-report?token=${encodeURIComponent(d.token)}&embedUrl=${encodeURIComponent(d.embed_url)}&reportId=${encodeURIComponent(d.report_id)}&reportName=${encodeURIComponent(d.dashboard_name)}`;
+                window.location.href = url;
+            } else {
+                alert('Error generating report: ' + d.error);
+            }
+        })
+        .catch(err => {
+            hideLoading();
+            alert('Error: ' + err.message);
+            console.error(err);
+        });
+    }
+</script>

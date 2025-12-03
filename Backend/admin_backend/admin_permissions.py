@@ -1,8 +1,8 @@
 #admin_permissions
 
 from flask import request, jsonify, session
-from db_connection import get_db_connection, close_db_connection
-from login_logout import admin_write_required
+from Backend.DB_backend.db_connection import get_db_connection, close_db_connection
+from Backend.DB_backend.login_logout import admin_write_required
 
 
 def get_department_permissions():

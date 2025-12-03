@@ -1,0 +1,551 @@
+<!-- Dashboards Tab - admin_dashboards.html -->
+
+<style>
+    /* Dashboards Tab Specific Styles */
+    #dashboards .alert-badge {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 700;
+        display: inline-block;
+        background: #fef5e7;
+        color: #9a6a16;
+        border: 1px solid #f9e79f;
+    }
+</style>
+
+<div id="dashboards" class="tab-content-section">
+    <div class="page-header">
+        <h2>Dashboards</h2>
+        <p>Manage your Power BI dashboards</p>
+    </div>
+
+    <div class="card-modern">
+        <div class="card-header-modern">
+            <h5><i class="fas fa-th-large"></i> Dashboard Management</h5>
+            {% if role != 'superuser' %}
+            <button class="btn-primary-modern" onclick="openAddDashboardModal()">
+                <i class="fas fa-plus"></i> Add Dashboard
+            </button>
+            {% else %}
+            <div style="text-align: right; color: #f59e0b; font-weight: 600; font-size: 12px;">
+                <i class="fas fa-lock"></i> Read-Only Mode
+            </div>
+            {% endif %}
+        </div>
+        <div class="card-body-modern">
+            {% if dashboards %}
+                <table id="dashboardsTable" class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>NAME</th>
+                            <th>OWNER</th>
+                            <th>REPORT ID</th>
+                            <th>GROUP ID</th>
+                            <th>CORE DATASET</th>
+                            <th>PROXY DATASET</th>
+                            <th>STATUS</th>
+                            <th>ALERT</th>
+                            <th>CREATED BY</th>
+                            <th>CREATED DATE</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dashboard in dashboards %}
+                        <tr>
+                            <td><strong>#{{ dashboard['DashboardID'] }}</strong></td>
+                            <td><strong>{{ dashboard['DashboardName'] }}</strong></td>
+                            <td><strong style="color: #667eea;">{{ dashboard['DashboardOwner'] or 'N/A' }}</strong></td>
+                            <td><small title="{{ dashboard['ReportID'] }}">{{ dashboard['ReportID'][:15] }}...</small></td>
+                            <td><small title="{{ dashboard['GroupID'] }}">{{ dashboard['GroupID'][:15] }}...</small></td>
+                            <td><small title="{{ dashboard['CoreDatasetID'] }}">{{ dashboard['CoreDatasetID'][:15] }}...</small></td>
+                            <td><small>{{ dashboard['ProxyDatasetID'][:15] if dashboard['ProxyDatasetID'] else 'N/A' }}...</small></td>
+                            <td>
+                                <span class="status-badge {% if dashboard['Status'] == 'Active' %}active{% else %}inactive{% endif %}">
+                                    {{ dashboard['Status'] }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if dashboard['Alert'] %}
+                                    <span class="alert-badge" title="{{ dashboard['Alert'] }}">
+                                        <i class="fas fa-exclamation-triangle"></i> {{ dashboard['Alert'][:20] }}...
+                                    </span>
+                                {% else %}
+                                    <span style="color: #718096; font-size: 12px;">—</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ dashboard['CreatedBy'] }}</td>
+                            <td>{{ dashboard['CreatedAt'].strftime('%Y-%m-%d') if dashboard['CreatedAt'] else 'N/A' }}</td>
+                            <td style="white-space: nowrap;">
+                                <button class="action-btn play" onclick="viewDashboardReport({{ dashboard['DashboardID'] }})" title="View Report">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="action-btn view" onclick="viewDashboardDetails({{ dashboard['DashboardID'] }})" title="View Details">
+                                    <i class="fas fa-circle-info"></i>
+                                </button>
+                                {% if role != 'superuser' %}
+                                <button class="action-btn edit" onclick="editDashboard({{ dashboard['DashboardID'] }})" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn delete" onclick="deleteDashboard({{ dashboard['DashboardID'] }})" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% else %}
+                                <button class="action-btn edit" disabled title="Read-only mode">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn delete" disabled title="Read-only mode">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p><strong>No dashboards found</strong></p>
+                    <p>Create your first dashboard to get started</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modals for Dashboards Tab -->
+<!-- Add Dashboard Modal -->
+<div class="modal fade" id="addDashboardModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-plus"></i> Add New Dashboard</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Dashboard Name <span class="required-indicator">*</span></label>
+                    <input type="text" class="form-control" id="dashboardName" placeholder="Enter dashboard name">
+                </div>
+                <div class="form-group">
+                    <label>Owner <span class="required-indicator">*</span></label>
+                    <select class="form-select" id="dashboardOwner">
+                        <option value="">-- Select Owner --</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Report ID <span class="required-indicator">*</span></label>
+                        <input type="text" class="form-control" id="dashboardReportId" placeholder="Enter Report ID">
+                    </div>
+                    <div class="form-group">
+                        <label>Group ID <span class="required-indicator">*</span></label>
+                        <input type="text" class="form-control" id="dashboardGroupId" placeholder="Enter Group ID">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Core Dataset ID <span class="required-indicator">*</span></label>
+                        <input type="text" class="form-control" id="dashboardCoreDataset" placeholder="Enter Core Dataset ID">
+                    </div>
+                    <div class="form-group">
+                        <label>Proxy Dataset ID</label>
+                        <input type="text" class="form-control" id="dashboardProxyDataset" placeholder="Optional">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Status <span class="required-indicator">*</span></label>
+                    <select class="form-select" id="dashboardStatus" onchange="updateAlertRequirement('add')">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="dashboardAlert">Alert Message
+                        <span class="required-indicator" id="addAlertRequired" style="display: none;">*</span>
+                    </label>
+                    <textarea class="form-control" id="dashboardAlert" rows="3" placeholder="Enter alert message for inactive dashboards"></textarea>
+                    <div class="alert-helper-text" id="addAlertHelper">
+                        <i class="fas fa-info-circle"></i> No alert needed for Active dashboards
+                    </div>
+                    <div class="alert-warning-text" id="addAlertWarning" style="display: none;">
+                        <i class="fas fa-exclamation-circle"></i> Alert message is required for Inactive dashboards
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea class="form-control" id="dashboardDescription" rows="3" placeholder="Optional"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer" style="gap: 10px; border-top: 1px solid var(--border-color); padding: 16px 24px;">
+                <button type="button" class="btn-primary-modern" style="background: #718096; width: auto;" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-primary-modern" style="width: auto;" onclick="saveDashboard()">Add Dashboard</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Dashboard Modal -->
+<div class="modal fade" id="editDashboardModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-edit"></i> Edit Dashboard</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editDashboardId">
+                <div class="form-group">
+                    <label>Dashboard Name <span class="required-indicator">*</span></label>
+                    <input type="text" class="form-control" id="editDashboardName" placeholder="Enter dashboard name">
+                </div>
+                <div class="form-group">
+                    <label>Owner <span class="required-indicator">*</span></label>
+                    <select class="form-select" id="editDashboardOwner">
+                        <option value="">-- Select Owner --</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Report ID <span class="required-indicator">*</span></label>
+                        <input type="text" class="form-control" id="editDashboardReportId" placeholder="Enter Report ID">
+                    </div>
+                    <div class="form-group">
+                        <label>Group ID <span class="required-indicator">*</span></label>
+                        <input type="text" class="form-control" id="editDashboardGroupId" placeholder="Enter Group ID">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Core Dataset ID <span class="required-indicator">*</span></label>
+                        <input type="text" class="form-control" id="editDashboardCoreDataset" placeholder="Enter Core Dataset ID">
+                    </div>
+                    <div class="form-group">
+                        <label>Proxy Dataset ID</label>
+                        <input type="text" class="form-control" id="editDashboardProxyDataset" placeholder="Optional">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Status <span class="required-indicator">*</span></label>
+                    <select class="form-select" id="editDashboardStatus" onchange="updateAlertRequirement('edit')">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editDashboardAlert">Alert Message
+                        <span class="required-indicator" id="editAlertRequired" style="display: none;">*</span>
+                    </label>
+                    <textarea class="form-control" id="editDashboardAlert" rows="3" placeholder="Enter alert message for inactive dashboards"></textarea>
+                    <div class="alert-helper-text" id="editAlertHelper">
+                        <i class="fas fa-info-circle"></i> No alert needed for Active dashboards
+                    </div>
+                    <div class="alert-warning-text" id="editAlertWarning" style="display: none;">
+                        <i class="fas fa-exclamation-circle"></i> Alert message is required for Inactive dashboards
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea class="form-control" id="editDashboardDescription" rows="3" placeholder="Optional"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer" style="gap: 10px; border-top: 1px solid var(--border-color); padding: 16px 24px;">
+                <button type="button" class="btn-primary-modern" style="background: #718096; width: auto;" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-primary-modern" style="width: auto;" onclick="updateDashboard()">Update Dashboard</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Dashboard Details Modal -->
+<div class="modal fade" id="viewDashboardModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-circle-info"></i> Dashboard Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="dashboardDetailsContent" style="font-size: 14px;">
+                    <!-- Content will be dynamically loaded -->
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid var(--border-color); padding: 16px 24px;">
+                <button type="button" class="btn-primary-modern" style="width: auto;" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Dashboards Tab Specific Scripts
+
+    function openAddDashboardModal() {
+        if (isSuperuser) {
+            alert('You do not have permission to add dashboards (Read-only mode)');
+            return;
+        }
+        document.getElementById('dashboardStatus').value = 'Active';
+        document.getElementById('dashboardAlert').value = '';
+        updateAlertRequirement('add');
+        const modal = new bootstrap.Modal(document.getElementById('addDashboardModal'));
+        modal.show();
+    }
+
+    function saveDashboard() {
+        const name = document.getElementById('dashboardName').value.trim();
+        const owner = document.getElementById('dashboardOwner').value.trim();
+        const reportId = document.getElementById('dashboardReportId').value.trim();
+        const groupId = document.getElementById('dashboardGroupId').value.trim();
+        const coreDataset = document.getElementById('dashboardCoreDataset').value.trim();
+        const proxyDataset = document.getElementById('dashboardProxyDataset').value.trim();
+        const status = document.getElementById('dashboardStatus').value;
+        const alertMsg = document.getElementById('dashboardAlert').value.trim();
+        const description = document.getElementById('dashboardDescription').value.trim();
+
+        if (!name || !reportId || !groupId || !coreDataset) {
+            alert('Please fill all required fields');
+            return;
+        }
+
+        if (status === 'Inactive' && !alertMsg) {
+            alert('Alert message is required for Inactive dashboards');
+            return;
+        }
+
+        showLoading();
+
+        fetch('/admin/add-dashboard', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                dashboard_name: name,
+                dashboard_owner: owner || '',
+                report_id: reportId,
+                group_id: groupId,
+                core_dataset: coreDataset,
+                proxy_dataset: proxyDataset || '',
+                status: status,
+                alert: alertMsg || '',
+                description: description
+            })
+        })
+        .then(r => r.json())
+        .then(d => {
+            hideLoading();
+            if (d.success) {
+                alert('Dashboard created successfully!');
+                bootstrap.Modal.getInstance(document.getElementById('addDashboardModal')).hide();
+                location.reload();
+            } else {
+                alert('Error: ' + d.error);
+            }
+        })
+        .catch(err => {
+            hideLoading();
+            alert('Error creating dashboard: ' + err.message);
+        });
+    }
+
+    function editDashboard(id) {
+        if (isSuperuser) {
+            alert('You do not have permission to edit dashboards (Read-only mode)');
+            return;
+        }
+        const dashboard = dashboardsData.find(d => d.DashboardID === id);
+        if (!dashboard) {
+            alert('Dashboard not found');
+            return;
+        }
+
+        document.getElementById('editDashboardId').value = dashboard.DashboardID;
+        document.getElementById('editDashboardName').value = dashboard.DashboardName;
+        document.getElementById('editDashboardOwner').value = dashboard.DashboardOwner || '';
+        document.getElementById('editDashboardReportId').value = dashboard.ReportID;
+        document.getElementById('editDashboardGroupId').value = dashboard.GroupID;
+        document.getElementById('editDashboardCoreDataset').value = dashboard.CoreDatasetID;
+        document.getElementById('editDashboardProxyDataset').value = dashboard.ProxyDatasetID || '';
+        document.getElementById('editDashboardStatus').value = dashboard.Status;
+        document.getElementById('editDashboardAlert').value = dashboard.Alert || '';
+        document.getElementById('editDashboardDescription').value = dashboard.Description || '';
+
+        updateAlertRequirement('edit');
+
+        const modal = new bootstrap.Modal(document.getElementById('editDashboardModal'));
+        modal.show();
+    }
+
+    function updateDashboard() {
+        const id = document.getElementById('editDashboardId').value;
+        const name = document.getElementById('editDashboardName').value.trim();
+        const owner = document.getElementById('editDashboardOwner').value.trim();
+        const reportId = document.getElementById('editDashboardReportId').value.trim();
+        const groupId = document.getElementById('editDashboardGroupId').value.trim();
+        const coreDataset = document.getElementById('editDashboardCoreDataset').value.trim();
+        const proxyDataset = document.getElementById('editDashboardProxyDataset').value.trim();
+        const status = document.getElementById('editDashboardStatus').value;
+        const alertMsg = document.getElementById('editDashboardAlert').value.trim();
+        const description = document.getElementById('editDashboardDescription').value.trim();
+
+        if (!name || !reportId || !groupId || !coreDataset) {
+            alert('Please fill all required fields');
+            return;
+        }
+
+        if (status === 'Inactive' && !alertMsg) {
+            alert('Alert message is required for Inactive dashboards');
+            return;
+        }
+
+        showLoading();
+
+        fetch(`/admin/update-dashboard/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                dashboard_name: name,
+                dashboard_owner: owner || '',
+                report_id: reportId,
+                group_id: groupId,
+                core_dataset: coreDataset,
+                proxy_dataset: proxyDataset || '',
+                status: status,
+                alert: alertMsg || '',
+                description: description
+            })
+        })
+        .then(r => r.json())
+        .then(d => {
+            hideLoading();
+            if (d.success) {
+                alert('Dashboard updated successfully!');
+                bootstrap.Modal.getInstance(document.getElementById('editDashboardModal')).hide();
+                location.reload();
+            } else {
+                alert('Error: ' + d.error);
+            }
+        })
+        .catch(err => {
+            hideLoading();
+            alert('Error updating dashboard: ' + err.message);
+        });
+    }
+
+    function viewDashboardReport(id) {
+        if (!id) {
+            alert('Invalid dashboard ID');
+            return;
+        }
+
+        showLoading();
+
+        fetch(`/admin/report-token/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(r => r.json())
+        .then(d => {
+            hideLoading();
+            if (d.success) {
+                const url = `/view-report?token=${encodeURIComponent(d.token)}&embedUrl=${encodeURIComponent(d.embed_url)}&reportId=${encodeURIComponent(d.report_id)}&reportName=${encodeURIComponent(d.dashboard_name)}`;
+                window.location.href = url;
+            } else {
+                alert('Error generating report: ' + d.error);
+            }
+        })
+        .catch(err => {
+            hideLoading();
+            alert('Error: ' + err.message);
+            console.error(err);
+        });
+    }
+
+    function viewDashboardDetails(id) {
+        const dashboard = dashboardsData.find(d => d.DashboardID === id);
+        if (!dashboard) {
+            alert('Dashboard not found');
+            return;
+        }
+
+        let html = '<div style="font-size: 14px;">';
+        html += `<div style="margin-bottom: 15px;"><strong>Dashboard Name:</strong> ${dashboard.DashboardName}</div>`;
+        html += `<div style="margin-bottom: 15px;"><strong>Owner:</strong> ${dashboard.DashboardOwner || 'N/A'}</div>`;
+        html += `<div style="margin-bottom: 15px;"><strong>Report ID:</strong> <code>${dashboard.ReportID}</code></div>`;
+        html += `<div style="margin-bottom: 15px;"><strong>Group ID:</strong> <code>${dashboard.GroupID}</code></div>`;
+        html += `<div style="margin-bottom: 15px;"><strong>Core Dataset ID:</strong> <code>${dashboard.CoreDatasetID}</code></div>`;
+        html += `<div style="margin-bottom: 15px;"><strong>Proxy Dataset ID:</strong> <code>${dashboard.ProxyDatasetID || 'N/A'}</code></div>`;
+        html += `<div style="margin-bottom: 15px;"><strong>Status:</strong> <span class="status-badge ${dashboard.Status === 'Active' ? 'active' : 'inactive'}">${dashboard.Status}</span></div>`;
+        html += `<div style="margin-bottom: 15px;"><strong>Alert:</strong> ${dashboard.Alert || 'No alert'}</div>`;
+        html += `<div style="margin-bottom: 15px;"><strong>Description:</strong> ${dashboard.Description || 'No description'}</div>`;
+        html += `<div style="margin-bottom: 15px;"><strong>Created By:</strong> ${dashboard.CreatedBy}</div>`;
+        html += `<div><strong>Created At:</strong> ${dashboard.CreatedAt ? new Date(dashboard.CreatedAt).toLocaleDateString() : 'N/A'}</div>`;
+        html += '</div>';
+
+        document.getElementById('dashboardDetailsContent').innerHTML = html;
+        const modal = new bootstrap.Modal(document.getElementById('viewDashboardModal'));
+        modal.show();
+    }
+
+    function deleteDashboard(id) {
+        if (isSuperuser) {
+            alert('You do not have permission to delete dashboards (Read-only mode)');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to delete this dashboard?')) return;
+
+        showLoading();
+
+        fetch(`/admin/delete-dashboard/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(r => r.json())
+        .then(d => {
+            hideLoading();
+            if (d.success) {
+                alert('Dashboard deleted successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + d.error);
+            }
+        })
+        .catch(err => {
+            hideLoading();
+            alert('Error deleting dashboard: ' + err.message);
+        });
+    }
+
+    $(document).ready(function() {
+        {% if dashboards %}
+        const commonConfig = {
+            pageLength: 10,
+            autoWidth: false,
+            dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+            language: {
+                search: "Search:",
+                lengthMenu: "Show _MENU_ entries",
+                paginate: {
+                    first: "First",
+                    last: "Last",
+                    next: "Next",
+                    previous: "Previous"
+                }
+            }
+        };
+
+        $('#dashboardsTable').DataTable({
+            ...commonConfig,
+            order: [[0, 'desc']],
+            scrollX: false,
+            language: {
+                ...commonConfig.language,
+                info: "Showing _START_ to _END_ of _TOTAL_ dashboards"
+            }
+        });
+        {% endif %}
+    });
+</script>

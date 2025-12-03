@@ -1,8 +1,8 @@
 #admin_users
 
 from flask import request, jsonify, session
-from db_connection import get_db_connection, close_db_connection
-from login_logout import admin_required, admin_write_required
+from Backend.DB_backend.db_connection import get_db_connection, close_db_connection
+from Backend.DB_backend.login_logout import admin_required, admin_write_required
 
 
 def get_all_users():
@@ -54,7 +54,7 @@ def register_admin_users_routes(app):
         API endpoint to get users by department (default: Data)
         """
         try:
-            from user_interface import get_users_by_department
+            from Backend.user_backend.user_interface import get_users_by_department
             department = request.args.get('department', 'Data')
             users = get_users_by_department(department)
             return jsonify({'success': True, 'users': users}), 200

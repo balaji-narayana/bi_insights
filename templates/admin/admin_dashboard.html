@@ -1,4 +1,4 @@
-<!-- admin_dashboard.html - WITH USER ACTIVITY LOGS TABLE & USERNAME/ROLE CONFIG FIELDS -->
+<!-- admin_dashboard.html  -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -55,17 +55,26 @@
             font-size: 14px;
         }
 
-        /* Top Navigation Bar */
-        .top-navbar { 
+        /* ============================================
+           TOP NAVIGATION BAR - RESPONSIVE HEADER
+           ============================================ */
+
+        .top-navbar {
             background: var(--primary-gradient);
             box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
             padding: 0.75rem 2rem;
             position: sticky;
             top: 0;
             z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            min-height: 70px;
+            transition: padding 0.3s ease;
         }
-        
-        .top-navbar .navbar-brand { 
+
+        .top-navbar .navbar-brand {
             font-weight: 700;
             font-size: 20px;
             color: white;
@@ -73,82 +82,135 @@
             align-items: center;
             gap: 12px;
             text-decoration: none;
+            flex: 1;
+            min-width: 200px;
+            transition: all 0.3s ease;
         }
-        
+
         .top-navbar .brand-icon {
             width: 40px;
             height: 40px;
+            min-width: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 20px;
+            flex-shrink: 0;
+            transition: width 0.3s ease, height 0.3s ease;
         }
 
         .top-navbar .brand-icon img {
-            width: 40px;
-            height: 40px;
+            width: 100%;
+            height: 100%;
             object-fit: contain;
         }
-        
+
+        .top-navbar .brand-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+            flex-shrink: 1;
+            transition: all 0.3s ease;
+        }
+
         .top-navbar .brand-text h1 {
             font-size: 20px;
             font-weight: 700;
             margin: 0;
             color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        
+
         .top-navbar .brand-text p {
             font-size: 11px;
             margin: 0;
             opacity: 0.9;
             color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .user-menu { 
+        .user-menu {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            transition: all 0.3s ease;
         }
-        
+
         .user-info {
             text-align: right;
             color: white;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            white-space: nowrap;
+            transition: all 0.3s ease;
         }
-        
+
         .user-info .user-name {
             font-weight: 600;
             font-size: 14px;
+            color: white;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        
+
         .user-info .user-role {
             font-size: 11px;
             opacity: 0.9;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 6px;
         }
 
         .user-info .user-role.superuser {
             background: rgba(255, 193, 7, 0.3);
-            padding: 2px 8px;
+            padding: 3px 8px;
             border-radius: 4px;
             font-weight: 600;
+            width: fit-content;
+            margin-left: auto;
         }
-        
+
+        .user-info .user-role i {
+            font-size: 10px;
+        }
+
         .btn-logout {
             background: rgba(255, 255, 255, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.3);
             color: white;
-            padding: 8px 16px;
+            padding: 8px 14px;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             font-size: 13px;
             text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            min-height: 36px;
+            min-width: fit-content;
         }
-        
+
         .btn-logout:hover {
             background: rgba(255, 255, 255, 0.3);
             color: white;
             transform: translateY(-2px);
+        }
+
+        .btn-logout i {
+            font-size: 12px;
         }
 
         /* Main Layout */
@@ -1078,70 +1140,995 @@
             font-weight: 600;
         }
 
-        /* Responsive */
-        @media (max-width: 992px) {
-            .stats-grid { 
-                grid-template-columns: 1fr 1fr;
-            }
+        /* ============================================
+           RESPONSIVE HAMBURGER MENU & ANIMATIONS
+           ============================================ */
+
+        /* Hamburger Toggle Button - Corporate Style */
+        .sidebar-toggle {
+            display: none;
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1.5px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            padding: 8px;
+            margin-right: 12px;
+            position: relative;
+            z-index: 1001;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 5.5px;
+            border-radius: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
         }
 
-        @media (max-width: 768px) {
-            .dashboard-container { 
+        .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.2);
+            transform: scale(1.08);
+        }
+
+        .sidebar-toggle:active {
+            transform: scale(0.95);
+        }
+
+        .sidebar-toggle:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+        }
+
+        .sidebar-toggle span {
+            width: 22px;
+            height: 2px;
+            background: white;
+            border-radius: 1px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: block;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Hamburger Animation - Active State */
+        body[data-sidebar-open="true"] .sidebar-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        body[data-sidebar-open="true"] .sidebar-toggle span:nth-child(1) {
+            transform: rotate(45deg) translateY(10px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        body[data-sidebar-open="true"] .sidebar-toggle span:nth-child(2) {
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        body[data-sidebar-open="true"] .sidebar-toggle span:nth-child(3) {
+            transform: rotate(-45deg) translateY(-10px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            cursor: pointer;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+            opacity: 1;
+        }
+
+        /* ============================================
+           MOBILE FIRST - EXTRA SMALL (< 576px)
+           ============================================ */
+        @media (max-width: 575px) {
+            /* Show hamburger on very small screens */
+            .sidebar-toggle {
+                display: flex;
+            }
+
+            /* Mobile sidebar - slide in drawer from header */
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 280px;
+                height: 100vh;
+                background: var(--sidebar-bg);
+                padding: 20px 0;
+                border-right: 1px solid var(--border-color);
+                z-index: 1001;
+                overflow-y: auto;
+                transform: translateX(-100%);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+            }
+
+            /* Sidebar open state */
+            body[data-sidebar-open="true"] .sidebar {
+                transform: translateX(0);
+            }
+
+            .dashboard-container {
                 flex-direction: column;
+                min-height: auto;
             }
-            
-            .sidebar { 
-                width: 100%;
-                border-right: none;
-                border-bottom: 1px solid var(--border-color);
+
+            .main-content {
+                padding: 16px;
+                min-height: calc(100vh - 70px);
             }
-            
-            .form-row { 
-                grid-template-columns: 1fr;
-            }
-            
-            .stats-grid { 
-                grid-template-columns: 1fr;
-            }
-            
-            .dept-info { 
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .dashboard-card { 
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-            
-            .dashboard-meta-right { 
-                width: 100%;
+
+            /* -------- MOBILE HEADER RESPONSIVE -------- */
+            .top-navbar {
+                padding: 0.5rem 0.5rem;
+                min-height: 60px;
+                gap: 8px;
+                flex-wrap: nowrap;
+                align-items: center;
                 justify-content: space-between;
             }
-            
+
+            .top-navbar .navbar-brand {
+                flex: 1;
+                min-width: 0;
+                gap: 8px;
+                display: flex;
+                align-items: center;
+            }
+
+            .top-navbar .brand-icon {
+                width: 32px;
+                height: 32px;
+                min-width: 32px;
+                flex-shrink: 0;
+            }
+
+            .top-navbar .brand-icon img {
+                width: 32px;
+                height: 32px;
+            }
+
+            .top-navbar .brand-text {
+                min-width: 0;
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 1px;
+            }
+
+            .top-navbar .brand-text h1 {
+                font-size: 13px;
+                line-height: 1.2;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .top-navbar .brand-text p {
+                display: none;
+            }
+
+            .user-menu {
+                display: flex;
+                gap: 6px;
+                align-items: center;
+                flex-shrink: 0;
+                flex-wrap: nowrap;
+            }
+
+            .user-info {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+                align-items: flex-end;
+                min-width: 0;
+            }
+
+            .user-info .user-name {
+                font-size: 10px;
+                color: white;
+                font-weight: 600;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .user-info .user-role {
+                font-size: 8px;
+                color: rgba(255, 255, 255, 0.85);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .btn-logout {
+                padding: 6px 10px;
+                font-size: 10px;
+                min-height: 32px;
+                white-space: nowrap;
+            }
+
+            .btn-logout i {
+                font-size: 10px;
+            }
+
+            .btn-logout:nth-of-type(1) {
+                display: none;
+            }
+
+            /* Page header */
+            .page-header h2 {
+                font-size: 22px;
+                margin-bottom: 8px;
+            }
+
+            /* Stats grid */
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                margin-bottom: 20px;
+            }
+
+            .stat-card {
+                padding: 16px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+
+            .stat-label {
+                font-size: 12px;
+            }
+
+            /* Forms */
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            /* Department items */
+            .dept-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .dept-header {
+                padding: 16px;
+            }
+
+            .dept-details h6 {
+                font-size: 14px;
+            }
+
+            /* Cards */
+            .card-modern {
+                margin-bottom: 16px;
+            }
+
+            .card-header-modern {
+                padding: 16px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .card-header-modern h5 {
+                font-size: 16px;
+            }
+
+            .card-body-modern {
+                padding: 16px;
+            }
+
+            /* Tables */
+            .dataTables_wrapper {
+                overflow-x: auto;
+                margin-bottom: 16px;
+            }
+
             .dataTables_length,
             .dataTables_filter {
                 float: none;
+                margin-bottom: 12px;
                 text-align: left;
-                margin-bottom: 10px;
             }
-            
+
             .dataTables_filter input {
                 width: 100%;
+                margin-left: 0;
+                margin-top: 8px;
             }
-            
+
             .dataTables_info,
             .dataTables_paginate {
                 float: none;
                 text-align: center;
-                margin-top: 10px;
+                margin-top: 12px;
+                display: flex;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 8px;
             }
-            
+
+            .dataTables_paginate .paginate_button {
+                padding: 4px 8px;
+                font-size: 12px;
+                margin-left: 2px;
+            }
+
+            /* Tables responsive */
+            .table {
+                font-size: 12px;
+            }
+
+            .table th,
+            .table td {
+                padding: 10px 8px !important;
+            }
+
+            .table th {
+                font-size: 10px;
+            }
+
+            /* Action buttons */
+            .action-btn {
+                padding: 5px 10px;
+                font-size: 10px;
+                margin-right: 2px;
+            }
+
+            /* Dashboard card */
+            .dashboard-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                padding: 12px;
+                margin: 8px;
+            }
+
+            .dashboard-info-left {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .dashboard-meta-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            /* User menu */
+            .user-menu {
+                flex-direction: column;
+                gap: 8px;
+                align-items: flex-end;
+                margin-top: 8px;
+            }
+
+            .user-info {
+                text-align: right;
+                font-size: 11px;
+            }
+
+            .user-info .user-name {
+                font-size: 12px;
+            }
+
+            .btn-logout {
+                padding: 6px 12px;
+                font-size: 11px;
+                margin-right: 0;
+            }
+
+            /* Sidebar menu */
+            .sidebar-menu a {
+                padding: 10px 16px;
+                font-size: 13px;
+                gap: 10px;
+            }
+
+            .sidebar-menu i {
+                font-size: 16px;
+            }
+
+            /* Modals */
+            .modal-dialog {
+                margin: 10px;
+            }
+
+            .modal-content {
+                border-radius: 10px;
+            }
+
+            .modal-header {
+                padding: 16px;
+            }
+
+            .modal-title {
+                font-size: 16px;
+            }
+
+            .modal-body {
+                padding: 16px;
+            }
+
+            /* Superuser banner */
+            .superuser-banner {
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+
+            .superuser-banner p {
+                font-size: 12px;
+            }
+        }
+
+        /* ============================================
+           TABLET - SMALL (576px - 768px)
+           ============================================ */
+        @media (min-width: 576px) and (max-width: 768px) {
+            .sidebar-toggle {
+                display: flex;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 260px;
+                height: 100vh;
+                z-index: 1001;
+                transform: translateX(-100%);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                overflow-y: auto;
+            }
+
+            body[data-sidebar-open="true"] .sidebar {
+                transform: translateX(0);
+            }
+
+            .dashboard-container {
+                flex-direction: column;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            /* -------- TABLET HEADER RESPONSIVE -------- */
+            .top-navbar {
+                padding: 0.55rem 1rem;
+                min-height: 64px;
+                gap: 12px;
+                flex-wrap: nowrap;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .top-navbar .navbar-brand {
+                gap: 10px;
+                flex: 1;
+                min-width: 0;
+            }
+
+            .top-navbar .brand-icon {
+                width: 34px;
+                height: 34px;
+                min-width: 34px;
+                flex-shrink: 0;
+            }
+
+            .top-navbar .brand-icon img {
+                width: 34px;
+                height: 34px;
+            }
+
+            .top-navbar .brand-text h1 {
+                font-size: 15px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .top-navbar .brand-text p {
+                display: none;
+            }
+
+            .user-menu {
+                gap: 10px;
+                flex-shrink: 0;
+                align-items: center;
+                flex-wrap: nowrap;
+            }
+
+            .user-info {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+                align-items: flex-end;
+                min-width: 0;
+            }
+
+            .user-info .user-name {
+                font-size: 11px;
+                color: white;
+                font-weight: 600;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .user-info .user-role {
+                font-size: 9px;
+                color: rgba(255, 255, 255, 0.85);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .btn-logout {
+                padding: 6px 11px;
+                font-size: 11px;
+                min-height: 34px;
+            }
+
+            .page-header h2 {
+                font-size: 24px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .dataTables_length,
+            .dataTables_filter {
+                float: none;
+                margin-bottom: 12px;
+            }
+
+            .dataTables_filter input {
+                width: 100%;
+            }
+
+            .dataTables_info,
+            .dataTables_paginate {
+                float: none;
+                text-align: center;
+                margin-top: 12px;
+            }
+
             .user-menu {
                 flex-direction: column;
                 gap: 10px;
                 align-items: flex-end;
+            }
+        }
+
+        /* ============================================
+           TABLET - LARGE (768px - 1024px)
+           ============================================ */
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .sidebar-toggle {
+                display: flex;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 240px;
+                height: 100vh;
+                z-index: 1001;
+                transform: translateX(-100%);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                overflow-y: auto;
+            }
+
+            body[data-sidebar-open="true"] .sidebar {
+                transform: translateX(0);
+            }
+
+            .dashboard-container {
+                flex-direction: column;
+            }
+
+            .main-content {
+                padding: 25px;
+            }
+
+            /* -------- LARGE TABLET HEADER RESPONSIVE -------- */
+            .top-navbar {
+                padding: 0.65rem 1.25rem;
+                min-height: 68px;
+                gap: 14px;
+                flex-wrap: nowrap;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .top-navbar .navbar-brand {
+                gap: 10px;
+                flex: 1;
+                min-width: 0;
+            }
+
+            .top-navbar .brand-icon {
+                width: 36px;
+                height: 36px;
+                min-width: 36px;
+                flex-shrink: 0;
+            }
+
+            .top-navbar .brand-icon img {
+                width: 36px;
+                height: 36px;
+            }
+
+            .top-navbar .brand-text h1 {
+                font-size: 16px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .top-navbar .brand-text p {
+                display: none;
+            }
+
+            .user-menu {
+                gap: 12px;
+                flex-shrink: 0;
+                align-items: center;
+                flex-wrap: nowrap;
+            }
+
+            .user-info {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+                align-items: flex-end;
+                min-width: 0;
+            }
+
+            .user-info .user-name {
+                font-size: 12px;
+                color: white;
+                font-weight: 600;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .user-info .user-role {
+                font-size: 10px;
+                color: rgba(255, 255, 255, 0.85);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .btn-logout {
+                padding: 7px 13px;
+                font-size: 12px;
+                min-height: 36px;
+            }
+
+            .page-header h2 {
+                font-size: 26px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 16px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+            }
+
+            .dataTables_length,
+            .dataTables_filter {
+                float: left;
+                margin-bottom: 0;
+            }
+
+            .dataTables_filter {
+                float: right;
+            }
+        }
+
+        /* ============================================
+           DESKTOP (1024px+)
+           ============================================ */
+        @media (min-width: 1024px) {
+            /* Hide hamburger on desktop */
+            .sidebar-toggle {
+                display: none;
+            }
+
+            /* Sidebar always visible on desktop */
+            .sidebar {
+                position: static;
+                width: 240px;
+                height: auto;
+                transform: translateX(0) !important;
+                overflow-y: auto;
+            }
+
+            .sidebar-overlay {
+                display: none !important;
+            }
+
+            .dashboard-container {
+                flex-direction: row;
+                min-height: calc(100vh - 70px);
+            }
+
+            .main-content {
+                padding: 30px;
+                flex: 1;
+            }
+
+            /* -------- DESKTOP HEADER RESPONSIVE -------- */
+            .top-navbar {
+                padding: 0.75rem 2rem;
+                min-height: 70px;
+                gap: 20px;
+            }
+
+            .top-navbar .navbar-brand {
+                gap: 12px;
+                flex: 0 1 auto;
+            }
+
+            .top-navbar .brand-icon {
+                width: 40px;
+                height: 40px;
+                min-width: 40px;
+            }
+
+            .top-navbar .brand-icon img {
+                width: 40px;
+                height: 40px;
+            }
+
+            .top-navbar .brand-text h1 {
+                font-size: 20px;
+            }
+
+            .top-navbar .brand-text p {
+                font-size: 11px;
+            }
+
+            .user-menu {
+                gap: 20px;
+                flex-wrap: nowrap;
+            }
+
+            .user-info {
+                display: flex;
+            }
+
+            .user-info .user-name {
+                font-size: 14px;
+            }
+
+            .user-info .user-role {
+                font-size: 11px;
+            }
+
+            .btn-logout {
+                padding: 8px 16px;
+                font-size: 13px;
+                min-height: 40px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+
+            .form-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            /* Tables - normal layout */
+            .dataTables_length {
+                float: left;
+            }
+
+            .dataTables_filter {
+                float: right;
+            }
+
+            .dataTables_info {
+                float: left;
+            }
+
+            .dataTables_paginate {
+                float: right;
+            }
+        }
+
+        /* ============================================
+           LARGE DESKTOP (1440px+)
+           ============================================ */
+        @media (min-width: 1440px) {
+            .main-content {
+                padding: 40px;
+            }
+
+            /* -------- LARGE DESKTOP HEADER RESPONSIVE -------- */
+            .top-navbar {
+                padding: 0.85rem 2.5rem;
+            }
+
+            .top-navbar .navbar-brand {
+                gap: 14px;
+            }
+
+            .top-navbar .brand-icon {
+                width: 44px;
+                height: 44px;
+                min-width: 44px;
+            }
+
+            .top-navbar .brand-icon img {
+                width: 44px;
+                height: 44px;
+            }
+
+            .top-navbar .brand-text h1 {
+                font-size: 22px;
+            }
+
+            .top-navbar .brand-text p {
+                font-size: 12px;
+            }
+
+            .user-menu {
+                gap: 24px;
+            }
+
+            .user-info .user-name {
+                font-size: 15px;
+            }
+
+            .user-info .user-role {
+                font-size: 12px;
+            }
+
+            .btn-logout {
+                padding: 10px 18px;
+                font-size: 13px;
+                min-height: 42px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 24px;
+            }
+
+            .page-header h2 {
+                font-size: 32px;
+            }
+        }
+
+        /* ============================================
+           EXTRA LARGE (1920px+)
+           ============================================ */
+        @media (min-width: 1920px) {
+            .dashboard-container {
+                max-width: 1920px;
+                margin: 0 auto;
+            }
+
+            /* -------- EXTRA LARGE HEADER RESPONSIVE -------- */
+            .top-navbar {
+                padding: 1rem 3rem;
+                gap: 28px;
+            }
+
+            .top-navbar .navbar-brand {
+                gap: 16px;
+            }
+
+            .top-navbar .brand-icon {
+                width: 48px;
+                height: 48px;
+                min-width: 48px;
+            }
+
+            .top-navbar .brand-icon img {
+                width: 48px;
+                height: 48px;
+            }
+
+            .top-navbar .brand-text h1 {
+                font-size: 24px;
+            }
+
+            .top-navbar .brand-text p {
+                font-size: 13px;
+            }
+
+            .user-menu {
+                gap: 28px;
+            }
+
+            .user-info .user-name {
+                font-size: 16px;
+            }
+
+            .user-info .user-role {
+                font-size: 12px;
+            }
+
+            .btn-logout {
+                padding: 12px 20px;
+                font-size: 14px;
+                min-height: 44px;
+            }
+        }
+
+        /* ============================================
+           UTILITY & TOUCH-FRIENDLY STYLES
+           ============================================ */
+
+        /* Ensure touch targets are at least 44px */
+        @media (hover: none) and (pointer: coarse) {
+            .sidebar-toggle,
+            .btn-logout,
+            .action-btn,
+            .tab-link {
+                min-height: 44px;
+                min-width: 44px;
+                padding: 10px 12px;
+            }
+
+            .action-btn {
+                padding: 8px 12px;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            .top-navbar,
+            .sidebar,
+            .sidebar-toggle,
+            .sidebar-overlay,
+            .user-menu {
+                display: none;
+            }
+
+            .dashboard-container {
+                margin: 0;
+                padding: 0;
+            }
+
+            .main-content {
+                padding: 0;
             }
         }
     </style>
@@ -1150,6 +2137,12 @@
     <!-- Top Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark top-navbar">
         <div class="container-fluid">
+            <!-- Hamburger Menu Button (Mobile Only) -->
+            <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar" type="button">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <a class="navbar-brand" href="#">
                 <div class="brand-icon">
                     <img src="{{ url_for('static', filename='Images/Samunnati Icon.png') }}" alt="Samunnati Logo">
@@ -1188,6 +2181,9 @@
     </div>
     {% endif %}
 
+    <!-- Sidebar Overlay (Mobile Only) -->
+    <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
     <div class="dashboard-container">
         <!-- Sidebar -->
         <div class="sidebar">
@@ -1198,512 +2194,20 @@
                 <li><a href="#" class="tab-link" data-tab="permissions"><i class="fas fa-lock"></i> Permissions</a></li>
                 <li><a href="#" class="tab-link" data-tab="users"><i class="fas fa-users"></i> Users</a></li>
                 <li><a href="#" class="tab-link" data-tab="configuration"><i class="fas fa-cog"></i> Configuration Testing</a></li>
+                <li><a href="#" class="tab-link" data-tab="refresh_agent"><i class="fas fa-sync-alt"></i> Refresh Agent</a></li>
             </ul>
         </div>
 
         <!-- Main Content -->
         <div class="main-content">
-            <!-- Overview Tab -->
-            <div id="overview" class="tab-content-section active">
-                <div class="page-header">
-                    <h2>Dashboard Overview</h2>
-                    <p>Quick stats and system overview</p>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon purple">
-                            <i class="fas fa-th-large"></i>
-                        </div>
-                        <div class="stat-value">{{ dashboards|length if dashboards else 0 }}</div>
-                        <div class="stat-label">Total Dashboards</div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon blue">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="stat-value">{{ users|length if users else 0 }}</div>
-                        <div class="stat-label">Total Users</div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon orange">
-                            <i class="fas fa-lock"></i>
-                        </div>
-                        <div class="stat-value">{{ permissions|length if permissions else 0 }}</div>
-                        <div class="stat-label">Active Permissions</div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon green">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="stat-value">{{ active_dashboards_count }}</div>
-                        <div class="stat-label">Active Dashboards</div>
-                    </div>
-                </div>
-
-                <div class="activity-section">
-                    <h3>Recent Activity</h3>
-                    {% if user_logs %}
-                        <table id="activityTable" class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>LOG ID</th>
-                                    <th>USER NAME</th>
-                                    <th>EMAIL</th>
-                                    <th>ACTION</th>
-                                    <th>DATE/TIME</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for log in user_logs %}
-                                <tr>
-                                    <td><strong>#{{ log['LogID'] }}</strong></td>
-                                    <td>{{ log['UserName'] }}</td>
-                                    <td>{{ log['UserEmail'] }}</td>
-                                    <td>
-                                        <span class="activity-badge {% if log['Action'] == 'Login' %}login{% else %}logout{% endif %}">
-                                            {% if log['Action'] == 'Login' %}
-                                                <i class="fas fa-sign-in-alt"></i> Login
-                                            {% else %}
-                                                <i class="fas fa-sign-out-alt"></i> Logout
-                                            {% endif %}
-                                        </span>
-                                    </td>
-                                    <td>{{ log['LogTime'].strftime('%Y-%m-%d %H:%M:%S') if log['LogTime'] else 'N/A' }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    {% else %}
-                        <div class="empty-state">
-                            <i class="fas fa-clipboard"></i>
-                            <p><strong>No Activity Logs</strong></p>
-                            <p>User activity logs will appear here</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Dashboards Tab -->
-            <div id="dashboards" class="tab-content-section">
-                <div class="page-header">
-                    <h2>Dashboards</h2>
-                    <p>Manage your Power BI dashboards</p>
-                </div>
-
-                <div class="card-modern">
-                    <div class="card-header-modern">
-                        <h5><i class="fas fa-th-large"></i> Dashboard Management</h5>
-                        {% if role != 'superuser' %}
-                        <button class="btn-primary-modern" onclick="openAddDashboardModal()">
-                            <i class="fas fa-plus"></i> Add Dashboard
-                        </button>
-                        {% else %}
-                        <div style="text-align: right; color: #f59e0b; font-weight: 600; font-size: 12px;">
-                            <i class="fas fa-lock"></i> Read-Only Mode
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="card-body-modern">
-                        {% if dashboards %}
-                            <table id="dashboardsTable" class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>NAME</th>
-                                        <th>OWNER</th>
-                                        <th>REPORT ID</th>
-                                        <th>GROUP ID</th>
-                                        <th>CORE DATASET</th>
-                                        <th>PROXY DATASET</th>
-                                        <th>STATUS</th>
-                                        <th>ALERT</th>
-                                        <th>CREATED BY</th>
-                                        <th>CREATED DATE</th>
-                                        <th>ACTIONS</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for dashboard in dashboards %}
-                                    <tr>
-                                        <td><strong>#{{ dashboard['DashboardID'] }}</strong></td>
-                                        <td><strong>{{ dashboard['DashboardName'] }}</strong></td>
-                                        <td><strong style="color: #667eea;">{{ dashboard['DashboardOwner'] or 'N/A' }}</strong></td>
-                                        <td><small title="{{ dashboard['ReportID'] }}">{{ dashboard['ReportID'][:15] }}...</small></td>
-                                        <td><small title="{{ dashboard['GroupID'] }}">{{ dashboard['GroupID'][:15] }}...</small></td>
-                                        <td><small title="{{ dashboard['CoreDatasetID'] }}">{{ dashboard['CoreDatasetID'][:15] }}...</small></td>
-                                        <td><small>{{ dashboard['ProxyDatasetID'][:15] if dashboard['ProxyDatasetID'] else 'N/A' }}...</small></td>
-                                        <td>
-                                            <span class="status-badge {% if dashboard['Status'] == 'Active' %}active{% else %}inactive{% endif %}">
-                                                {{ dashboard['Status'] }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {% if dashboard['Alert'] %}
-                                                <span class="alert-badge" title="{{ dashboard['Alert'] }}">
-                                                    <i class="fas fa-exclamation-triangle"></i> {{ dashboard['Alert'][:20] }}...
-                                                </span>
-                                            {% else %}
-                                                <span style="color: #718096; font-size: 12px;">—</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ dashboard['CreatedBy'] }}</td>
-                                        <td>{{ dashboard['CreatedAt'].strftime('%Y-%m-%d') if dashboard['CreatedAt'] else 'N/A' }}</td>
-                                        <td style="white-space: nowrap;">
-                                            <button class="action-btn play" onclick="viewDashboardReport({{ dashboard['DashboardID'] }})" title="View Report">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="action-btn view" onclick="viewDashboardDetails({{ dashboard['DashboardID'] }})" title="View Details">
-                                                <i class="fas fa-circle-info"></i>
-                                            </button>
-                                            {% if role != 'superuser' %}
-                                            <button class="action-btn edit" onclick="editDashboard({{ dashboard['DashboardID'] }})" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="action-btn delete" onclick="deleteDashboard({{ dashboard['DashboardID'] }})" title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                            {% else %}
-                                            <button class="action-btn edit" disabled title="Read-only mode">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="action-btn delete" disabled title="Read-only mode">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        {% else %}
-                            <div class="empty-state">
-                                <i class="fas fa-inbox"></i>
-                                <p><strong>No dashboards found</strong></p>
-                                <p>Create your first dashboard to get started</p>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Departments Tab -->
-            <div id="departments" class="tab-content-section">
-                <div class="page-header">
-                    <h2>Departments</h2>
-                    <p>View departments and their dashboard access</p>
-                </div>
-
-                <div class="card-modern">
-                    <div class="card-header-modern">
-                        <h5><i class="fas fa-building"></i> Departments & Dashboard Access</h5>
-                    </div>
-                    <div class="card-body-modern">
-                        {% if departments_with_dashboards %}
-                            {% for dept in departments_with_dashboards %}
-                            <div class="dept-item">
-                                <div class="dept-header" onclick="toggleDepartment({{ dept['DepartmentID'] }})">
-                                    <div class="dept-info">
-                                        <div class="dept-icon">
-                                            <i class="fas fa-building"></i>
-                                        </div>
-                                        <div class="dept-details">
-                                            <h6>{{ dept['DepartmentName'] }}</h6>
-                                            <p><i class="fas fa-calendar"></i> Created: {{ dept['CreatedAt'].strftime('%Y-%m-%d') if dept['CreatedAt'] else 'N/A' }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="dept-meta">
-                                        <span class="dept-count">{{ dept['DashboardCount'] }} Dashboard{% if dept['DashboardCount'] != 1 %}s{% endif %}</span>
-                                        <i class="fas fa-chevron-down dept-arrow" id="arrow-{{ dept['DepartmentID'] }}"></i>
-                                    </div>
-                                </div>
-                                <div class="dept-dashboards" id="dashboards-{{ dept['DepartmentID'] }}">
-                                    {% if dept['Dashboards'] %}
-                                        {% for dashboard in dept['Dashboards'] %}
-                                        <div class="dashboard-card">
-                                            <div class="dashboard-info-left">
-                                                <div class="dashboard-mini-icon">
-                                                    <i class="fas fa-chart-bar"></i>
-                                                </div>
-                                                <div class="dashboard-details">
-                                                    <h6>{{ dashboard['DashboardName'] }}</h6>
-                                                    <p>
-                                                        <i class="fas fa-user"></i> Owner: {{ dashboard['DashboardOwner'] or 'Unassigned' }} | 
-                                                        <i class="fas fa-shield-alt"></i> Granted by {{ dashboard['GrantedBy'] or 'Unknown' }}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div class="dashboard-meta-right">
-                                                <span class="status-badge {% if dashboard['Status'] == 'Active' %}active{% else %}inactive{% endif %}">
-                                                    {{ dashboard['Status'] }}
-                                                </span>
-                                                <button class="action-btn play" onclick="viewDeptDashboardReport({{ dashboard['DashboardID'] }})" title="Open Dashboard">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        {% endfor %}
-                                    {% else %}
-                                        <div class="empty-state">
-                                            <i class="fas fa-inbox"></i>
-                                            <p>No dashboards assigned to this department</p>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="empty-state">
-                                <i class="fas fa-inbox"></i>
-                                <p><strong>No departments found</strong></p>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Permissions Tab -->
-            <div id="permissions" class="tab-content-section">
-                <div class="page-header">
-                    <h2>Permissions</h2>
-                    <p>Manage dashboard access permissions</p>
-                </div>
-
-                <div class="card-modern">
-                    <div class="card-header-modern">
-                        <h5><i class="fas fa-lock"></i> Manage Permissions</h5>
-                        {% if role != 'superuser' %}
-                        <button class="btn-primary-modern" onclick="openGrantPermissionModal()">
-                            <i class="fas fa-shield-alt"></i> Grant Permission
-                        </button>
-                        {% else %}
-                        <div style="text-align: right; color: #f59e0b; font-weight: 600; font-size: 12px;">
-                            <i class="fas fa-lock"></i> Read-Only Mode
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="card-body-modern">
-                        {% if permissions %}
-                            <table id="permissionsTable" class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>DASHBOARD</th>
-                                        <th>DEPARTMENT</th>
-                                        <th>ROLES</th>
-                                        <th>GRANTED BY</th>
-                                        <th>DATE</th>
-                                        <th>ACTIONS</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for perm in permissions %}
-                                    <tr>
-                                        <td><strong>{{ perm['DashboardName'] }}</strong></td>
-                                        <td><span class="dept-badge">{{ perm['DepartmentName'] }}</span></td>
-                                        <td><span style="color: #718096; font-size: 12px;">All</span></td>
-                                        <td>{{ perm['GrantedBy'] }}</td>
-                                        <td>{{ perm['GrantedAt'].strftime('%Y-%m-%d') if perm['GrantedAt'] else 'N/A' }}</td>
-                                        <td>
-                                            {% if role != 'superuser' %}
-                                            <button class="action-btn delete" onclick="revokePermission({{ perm['DepartmentDashboardID'] }})" title="Revoke Access">
-                                                <i class="fas fa-lock"></i> Revoke
-                                            </button>
-                                            {% else %}
-                                            <button class="action-btn delete" disabled title="Read-only mode">
-                                                <i class="fas fa-lock"></i> Revoke
-                                            </button>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        {% else %}
-                            <div class="empty-state">
-                                <i class="fas fa-inbox"></i>
-                                <p><strong>No permissions granted yet</strong></p>
-                                <p>Grant dashboard access to departments</p>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Users Tab -->
-            <div id="users" class="tab-content-section">
-                <div class="page-header">
-                    <h2>Users</h2>
-                    <p>Manage user accounts and roles</p>
-                </div>
-
-                <div class="card-modern">
-                    <div class="card-header-modern">
-                        <h5><i class="fas fa-users"></i> User Management</h5>
-                    </div>
-                    <div class="card-body-modern">
-                        {% if users %}
-                            <table id="usersTable" class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>NAME</th>
-                                        <th>EMAIL</th>
-                                        <th>DEPARTMENT</th>
-                                        <th>ROLE</th>
-                                        <th>CREATED DATE</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for user in users %}
-                                    <tr>
-                                        <td><strong>#{{ user['UserID'] }}</strong></td>
-                                        <td>{{ user['UserName'] }}</td>
-                                        <td>{{ user['UserEmail'] }}</td>
-                                        <td>{{ user['DepartmentName'] }}</td>
-                                        <td>
-                                            {% if role != 'superuser' %}
-                                            <select class="role-dropdown" id="role_{{ user['UserID'] }}" data-user-id="{{ user['UserID'] }}" onchange="changeUserRole({{ user['UserID'] }}, this)">
-                                                <option value="user" {% if user['Role'] == 'user' %}selected{% endif %}>User</option>
-                                                <option value="admin" {% if user['Role'] == 'admin' %}selected{% endif %}>Admin</option>
-                                                <option value="superuser" {% if user['Role'] == 'superuser' %}selected{% endif %}>Superuser</option>
-                                            </select>
-                                            {% else %}
-                                            <span class="role-badge-display" style="display: inline-block; padding: 8px 14px; background: #f0f4ff; border-radius: 6px; font-weight: 600; font-size: 13px;">
-                                                {% if user['Role'] == 'admin' %}
-                                                    <i class="fas fa-shield-alt"></i> ADMIN
-                                                {% elif user['Role'] == 'superuser' %}
-                                                    <i class="fas fa-eye"></i> SUPERUSER
-                                                {% else %}
-                                                    <i class="fas fa-user"></i> USER
-                                                {% endif %}
-                                            </span>
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ user['CreatedAt'].strftime('%Y-%m-%d') }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        {% else %}
-                            <div class="empty-state">
-                                <i class="fas fa-inbox"></i>
-                                <p><strong>No users found</strong></p>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Configuration Tab -->
-            <div id="configuration" class="tab-content-section">
-                <div class="page-header">
-                    <h2>Configuration Testing</h2>
-                    <p>Test Azure AD & Power BI configuration</p>
-                </div>
-
-                <div class="card-modern">
-                    <div class="card-header-modern">
-                        <h5><i class="fas fa-key"></i> Azure AD & Power BI Config</h5>
-                    </div>
-                    <div class="card-body-modern">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Client ID <span style="color: #f56565;">*</span></label>
-                                <input type="text" class="form-control" id="client_id" placeholder="Enter Client ID">
-                            </div>
-                            <div class="form-group">
-                                <label>Tenant ID <span style="color: #f56565;">*</span></label>
-                                <input type="text" class="form-control" id="tenant_id" placeholder="Enter Tenant ID">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Client Secret <span style="color: #f56565;">*</span></label>
-                            <input type="password" class="form-control" id="client_secret" placeholder="Enter Client Secret">
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Report ID <span style="color: #f56565;">*</span></label>
-                                <input type="text" class="form-control" id="report_id" placeholder="Enter Report ID">
-                            </div>
-                            <div class="form-group">
-                                <label>Group ID <span style="color: #f56565;">*</span></label>
-                                <input type="text" class="form-control" id="group_id" placeholder="Enter Group ID">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Core Dataset ID <span style="color: #f56565;">*</span></label>
-                                <input type="text" class="form-control" id="core_dataset" placeholder="Enter Core Dataset ID">
-                            </div>
-                            <div class="form-group">
-                                <label>Proxy Dataset ID</label>
-                                <input type="text" class="form-control" id="proxy_dataset" placeholder="Optional">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Username</label>
-                                <input type="text" class="form-control" id="config_username" placeholder="Leave empty for default (session email)">
-                                <small style="color: #718096; margin-top: 6px; display: block;"><i class="fas fa-info-circle"></i> Optional - if not provided, your email will be used</small>
-                            </div>
-                            <div class="form-group">
-                                <label>Role</label>
-                                <input type="text" class="form-control" id="config_role" placeholder="Leave empty for default (RM)">
-                                <small style="color: #718096; margin-top: 6px; display: block;"><i class="fas fa-info-circle"></i> Optional - if not provided, RM will be used</small>
-                            </div>
-                        </div>
-                        <button class="btn-primary-modern" style="width: 100%; justify-content: center;" id="generateBtn" onclick="generateToken()">
-                            <i class="fas fa-bolt"></i> Generate Token & URL
-                        </button>
-                        
-                        <div id="resultCard" style="margin-top: 20px; display: none;">
-                            <h5 id="resultTitle" style="margin-bottom: 15px; color: #48bb78;">✅ Success!</h5>
-                            
-                            <div class="info-display" id="workspaceDisplay" style="display: none;">
-                                <div class="label"><i class="fas fa-building"></i> Workspace Name</div>
-                                <div class="value" id="workspaceValue"></div>
-                            </div>
-
-                            <div class="info-display" id="reportDisplay" style="display: none;">
-                                <div class="label"><i class="fas fa-file-chart-line"></i> Report Name</div>
-                                <div class="value" id="reportValue"></div>
-                            </div>
-
-                            <div class="info-display" id="usernameDisplay" style="display: none;">
-                                <div class="label"><i class="fas fa-user"></i> Username Used</div>
-                                <div class="value" id="usernameValue"></div>
-                            </div>
-
-                            <div class="info-display" id="roleDisplay" style="display: none;">
-                                <div class="label"><i class="fas fa-user-tag"></i> Role Used</div>
-                                <div class="value" id="roleValue"></div>
-                            </div>
-
-                            <div style="margin-top: 15px; padding: 15px; background: #f8f9fc; border-radius: 8px; border: 1px solid var(--border-color);">
-                                <small style="color: var(--text-secondary); font-weight: 600;"><i class="fas fa-lock"></i> Token:</small>
-                                <div style="font-family: 'Courier New', monospace; font-size: 11px; margin-top: 8px; max-height: 80px; overflow-y: auto; padding: 8px; background: white; border-radius: 4px;" id="tokenValue"></div>
-                                <button class="btn-primary-modern" onclick="copyToClipboard('tokenValue')" style="margin-top: 10px; width: auto;">
-                                    <i class="fas fa-copy"></i> Copy Token
-                                </button>
-                            </div>
-
-                            <div style="margin-top: 15px; padding: 15px; background: #f8f9fc; border-radius: 8px; border: 1px solid var(--border-color);">
-                                <small style="color: var(--text-secondary); font-weight: 600;"><i class="fas fa-link"></i> Embed URL:</small>
-                                <div style="font-family: 'Courier New', monospace; font-size: 11px; margin-top: 8px; max-height: 80px; overflow-y: auto; padding: 8px; background: white; border-radius: 4px;" id="urlValue"></div>
-                                <button class="btn-primary-modern" onclick="copyToClipboard('urlValue')" style="margin-top: 10px; width: auto;">
-                                    <i class="fas fa-copy"></i> Copy URL
-                                </button>
-                            </div>
-
-                            <button class="btn-primary-modern" id="viewReportBtn" onclick="viewReport()" style="margin-top: 15px; display: none; width: 100%; justify-content: center;">
-                                <i class="fas fa-eye"></i> View Report
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            <!-- Include Tab Files -->
+            {% include 'admin/admin_overview.html' %}
+            {% include 'admin/admin_reports.html' %}
+            {% include 'admin/admin_departments.html' %}
+            {% include 'admin/admin_permissions.html' %}
+            {% include 'admin/admin_users.html' %}
+            {% include 'admin/admin_configuration.html' %}
+            {% include 'admin/admin_refresh_agent.html' %}
             </div>
         </div>
     </div>
@@ -2651,6 +3155,103 @@
             const text = document.getElementById(elementId).textContent;
             navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard!'));
         }
+
+        /* ============================================
+           RESPONSIVE MENU FUNCTIONALITY
+           ============================================ */
+
+        // Get elements
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const sidebar = document.querySelector('.sidebar');
+        const tabLinks = document.querySelectorAll('.tab-link');
+
+        // Toggle sidebar on hamburger button click
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleSidebar();
+            });
+        }
+
+        // Close sidebar when overlay is clicked
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', function() {
+                closeSidebar();
+            });
+        }
+
+        // Close sidebar when a tab link is clicked (mobile only)
+        tabLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                // Close sidebar only on mobile/tablet
+                if (window.innerWidth < 1024) {
+                    closeSidebar();
+                }
+            });
+        });
+
+        // Toggle sidebar visibility
+        function toggleSidebar() {
+            const isOpen = document.body.getAttribute('data-sidebar-open') === 'true';
+            if (isOpen) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
+        }
+
+        // Open sidebar
+        function openSidebar() {
+            document.body.setAttribute('data-sidebar-open', 'true');
+            sidebarOverlay.classList.add('show');
+            // Prevent body scroll on mobile
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close sidebar
+        function closeSidebar() {
+            document.body.setAttribute('data-sidebar-open', 'false');
+            sidebarOverlay.classList.remove('show');
+            // Restore body scroll
+            document.body.style.overflow = '';
+        }
+
+        // Auto-close sidebar when window is resized to desktop
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                // If window is now desktop size and sidebar is open, close it
+                if (window.innerWidth >= 1024) {
+                    closeSidebar();
+                }
+            }, 250);
+        });
+
+        // Close sidebar on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.body.getAttribute('data-sidebar-open') === 'true') {
+                closeSidebar();
+            }
+        });
+
+        // Prevent sidebar scroll from affecting body scroll (on mobile)
+        if (sidebar) {
+            sidebar.addEventListener('touchmove', function(e) {
+                // Allow natural scroll inside sidebar
+                const isScrollable = this.scrollHeight > this.clientHeight;
+                if (isScrollable) {
+                    return;
+                }
+                e.preventDefault();
+            }, false);
+        }
+
+        // Initialize sidebar state on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            closeSidebar();
+        });
     </script>
 </body>
 </html>
